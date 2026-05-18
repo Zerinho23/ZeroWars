@@ -17,6 +17,7 @@ import com.zerowars.managers.CooldownManager;
 import com.zerowars.managers.EventManager;
 import com.zerowars.managers.HeatManager;
 import com.zerowars.managers.RankingManager;
+import com.zerowars.managers.RewardManager;
 import com.zerowars.managers.ZoneManager;
 import com.zerowars.placeholders.ZeroWarsPlaceholders;
 import com.zerowars.storage.DatabaseManager;
@@ -27,16 +28,11 @@ import java.util.logging.Level;
 /**
  * ZeroWars - Competitive PvP Zone Control Plugin
  * Autor: zerinho23 | Colaborador: The_Titan19
- *
- * Clase principal del plugin. Gestiona el ciclo de vida completo:
- * enable → carga managers → registra listeners/comandos → disable → limpieza.
  */
 public final class ZeroWars extends JavaPlugin {
 
-    // ── Instancia singleton ──────────────────────────────────────────────────
     private static ZeroWars instance;
 
-    // ── Managers (inyección manual, sin framework) ───────────────────────────
     private ConfigManager configManager;
     private DatabaseManager databaseManager;
     private ZoneManager zoneManager;
@@ -47,131 +43,76 @@ public final class ZeroWars extends JavaPlugin {
     private HeatManager heatManager;
     private RankingManager rankingManager;
     private ClanManager clanManager;
+    private RewardManager rewardManager;
 
-    // ── API pública ──────────────────────────────────────────────────────────
     private ZeroWarsAPI api;
 
     @Override
     public void onEnable() {
         instance = this;
         long start = System.currentTimeMillis();
-
         getLogger().info("╔══════════════════════════════════╗");
         getLogger().info("║       ZeroWars  v" + getDescription().getVersion() + "          ║");
         getLogger().info("║  zerinho23 | The_Titan19         ║");
         getLogger().info("╚══════════════════════════════════╝");
-
-        // 1. Configuración — primero siempre
         if (!initConfig()) {
-            getLogger().severe("Error cargando configuración. Desactivando plugin.");
-            getServer().getPluginManager().disablePlugin(this);
-            return;
+            getLogger().severe("Error cargando configuracion. Desactivando plugin.");
+            getServer().getPluginManager().disablePlugin(this); return;
         }
-
-        // 2. Base de datos — bloquea el hilo principal brevemente para inicializar
         if (!initDatabase()) {
             getLogger().severe("Error conectando a la base de datos. Desactivando plugin.");
-            getServer().getPluginManager().disablePlugin(this);
-            return;
+            getServer().getPluginManager().disablePlugin(this); return;
         }
-
-        // 3. Managers — orden importa (dependencias entre managers)
         initManagers();
-
-        // 4. Listeners
         registerListeners();
-
-        // 5. Comandos
         registerCommands();
-
-        // 6. PlaceholderAPI (opcional)
         registerPlaceholders();
-
-        // 7. API pública
         this.api = new ZeroWarsAPI(this);
-
-        long elapsed = System.currentTimeMillis() - start;
-        getLogger().info("ZeroWars activado correctamente en " + elapsed + "ms.");
-        getLogger().info("Zonas cargadas: " + zoneManager.getZoneCount());
+        getLogger().info("ZeroWars v" + getDescription().getVersion() + " activado en "
+                + (System.currentTimeMillis() - start) + "ms | Zonas: " + zoneManager.getZoneCount()
+                + " | Vault: " + (rewardManager.isVaultEnabled() ? "SI" : "NO (dinero desactivado)"));
     }
 
     @Override
     public void onDisable() {
         getLogger().info("Deteniendo ZeroWars...");
-
-        // Cancelar tareas del event manager
-        if (eventManager != null) eventManager.shutdown();
-
-        // Cancelar capturas activas y guardar estado
+        if (eventManager   != null) eventManager.shutdown();
         if (captureManager != null) captureManager.shutdown();
-
-        // Guardar datos de jugadores y zonas
-        if (zoneManager != null) zoneManager.saveAll();
+        if (zoneManager    != null) zoneManager.saveAll();
         if (rankingManager != null) rankingManager.saveAll();
-        if (clanManager != null) clanManager.saveAll();
-
-        // Cerrar pool de base de datos
+        if (clanManager    != null) clanManager.saveAll();
         if (databaseManager != null) databaseManager.close();
-
-        getLogger().info("ZeroWars desactivado correctamente. ¡Hasta la próxima!");
+        getLogger().info("ZeroWars desactivado. Hasta la proxima!");
         instance = null;
     }
 
-    // ────────────────────────────────────────────────────────────────────────
-    //  Inicialización interna
-    // ────────────────────────────────────────────────────────────────────────
-
     private boolean initConfig() {
-        try {
-            this.configManager = new ConfigManager(this);
-            configManager.loadAll();
-            return true;
-        } catch (Exception e) {
-            getLogger().log(Level.SEVERE, "Fallo al cargar configuración", e);
-            return false;
-        }
+        try { this.configManager = new ConfigManager(this); configManager.loadAll(); return true; }
+        catch (Exception e) { getLogger().log(Level.SEVERE, "Fallo al cargar configuracion", e); return false; }
     }
 
     private boolean initDatabase() {
-        try {
-            this.databaseManager = new DatabaseManager(this);
-            databaseManager.initialize();
-            return true;
-        } catch (Exception e) {
-            getLogger().log(Level.SEVERE, "Fallo al inicializar base de datos", e);
-            return false;
-        }
+        try { this.databaseManager = new DatabaseManager(this); databaseManager.initialize(); return true; }
+        catch (Exception e) { getLogger().log(Level.SEVERE, "Fallo al inicializar base de datos", e); return false; }
     }
 
     private void initManagers() {
-        // CooldownManager — sin dependencias
-        this.cooldownManager = new CooldownManager(this);
-
-        // ConsumableManager — depende de cooldownManager
+        this.cooldownManager   = new CooldownManager(this);
         this.consumableManager = new ConsumableManager(this);
-
-        // ClanManager — sin dependencias externas
-        this.clanManager = new ClanManager(this);
-
-        // ZoneManager — depende de databaseManager
-        this.zoneManager = new ZoneManager(this);
+        this.clanManager       = new ClanManager(this);
+        this.zoneManager       = new ZoneManager(this);
         this.zoneManager.loadZones();
-
-        // CaptureManager — depende de zoneManager y cooldownManager
-        this.captureManager = new CaptureManager(this);
+        this.captureManager    = new CaptureManager(this);
         this.captureManager.startUpdateTask();
-
-        // HeatManager — depende de zoneManager
-        this.heatManager = new HeatManager(this);
-
-        // RankingManager — depende de databaseManager
-        this.rankingManager = new RankingManager(this);
+        this.heatManager       = new HeatManager(this);
+        this.rankingManager    = new RankingManager(this);
         this.rankingManager.loadRankings();
-
-        // EventManager — depende de todos los anteriores
-        this.eventManager = new EventManager(this);
+        this.eventManager      = new EventManager(this);
         this.eventManager.startScheduler();
-
+        // RewardManager DESPUES de EventManager (necesita getRewardMultiplier)
+        this.rewardManager     = new RewardManager(this);
+        // Passive reward tick DESPUES de rewardManager
+        this.zoneManager.startPassiveRewardTick();
         getLogger().info("Managers inicializados correctamente.");
     }
 
@@ -187,22 +128,12 @@ public final class ZeroWars extends JavaPlugin {
         var zwCmd = getCommand("zerowars");
         if (zwCmd != null) {
             var handler = new ZeroWarsCommand(this);
-            zwCmd.setExecutor(handler);
-            zwCmd.setTabCompleter(handler);
+            zwCmd.setExecutor(handler); zwCmd.setTabCompleter(handler);
         }
-
-        var zoneCmd = getCommand("zone");
-        if (zoneCmd != null) zoneCmd.setExecutor(new ZoneCommand(this));
-
-        var zonesCmd = getCommand("zones");
-        if (zonesCmd != null) zonesCmd.setExecutor(new ZonesCommand(this));
-
-        var topCmd = getCommand("top");
-        if (topCmd != null) topCmd.setExecutor(new TopCommand(this));
-
-        var eventsCmd = getCommand("events");
-        if (eventsCmd != null) eventsCmd.setExecutor(new EventsCommand(this));
-
+        var zoneCmd   = getCommand("zone");   if (zoneCmd   != null) zoneCmd.setExecutor(new ZoneCommand(this));
+        var zonesCmd  = getCommand("zones");  if (zonesCmd  != null) zonesCmd.setExecutor(new ZonesCommand(this));
+        var topCmd    = getCommand("top");    if (topCmd    != null) topCmd.setExecutor(new TopCommand(this));
+        var eventsCmd = getCommand("events"); if (eventsCmd != null) eventsCmd.setExecutor(new EventsCommand(this));
         getLogger().info("Comandos registrados.");
     }
 
@@ -215,21 +146,17 @@ public final class ZeroWars extends JavaPlugin {
         }
     }
 
-    // ────────────────────────────────────────────────────────────────────────
-    //  Getters públicos
-    // ────────────────────────────────────────────────────────────────────────
-
-    public static ZeroWars getInstance() { return instance; }
-
-    public ConfigManager getConfigManager()       { return configManager; }
-    public DatabaseManager getDatabaseManager()   { return databaseManager; }
-    public ZoneManager getZoneManager()           { return zoneManager; }
-    public CaptureManager getCaptureManager()     { return captureManager; }
-    public ConsumableManager getConsumableManager() { return consumableManager; }
-    public CooldownManager getCooldownManager()   { return cooldownManager; }
-    public EventManager getEventManager()         { return eventManager; }
-    public HeatManager getHeatManager()           { return heatManager; }
-    public RankingManager getRankingManager()     { return rankingManager; }
-    public ClanManager getClanManager()           { return clanManager; }
-    public ZeroWarsAPI getAPI()                   { return api; }
+    public static ZeroWars getInstance()              { return instance; }
+    public ConfigManager getConfigManager()           { return configManager; }
+    public DatabaseManager getDatabaseManager()       { return databaseManager; }
+    public ZoneManager getZoneManager()               { return zoneManager; }
+    public CaptureManager getCaptureManager()         { return captureManager; }
+    public ConsumableManager getConsumableManager()   { return consumableManager; }
+    public CooldownManager getCooldownManager()       { return cooldownManager; }
+    public EventManager getEventManager()             { return eventManager; }
+    public HeatManager getHeatManager()               { return heatManager; }
+    public RankingManager getRankingManager()         { return rankingManager; }
+    public ClanManager getClanManager()               { return clanManager; }
+    public RewardManager getRewardManager()           { return rewardManager; }
+    public ZeroWarsAPI getAPI()                       { return api; }
 }
