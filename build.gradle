@@ -4,7 +4,7 @@ plugins {
 }
 
 group = 'com.zerowars'
-version = '1.1.1'
+version = '1.1.2'
 description = 'ZeroWars - Competitive PvP Zone Control Plugin'
 
 repositories {
@@ -14,17 +14,9 @@ repositories {
 }
 
 dependencies {
-    // Paper API — compilamos contra 1.20.1 (mínimo soportado).
-    // El plugin corre en 1.20.1 → 1.21.x gracias a VersionUtil.
     compileOnly 'io.papermc.paper:paper-api:1.20.1-R0.1-SNAPSHOT'
-
-    // PlaceholderAPI
     compileOnly 'me.clip:placeholderapi:2.11.5'
-
-    // SQLite JDBC (shaded into jar)
     implementation 'org.xerial:sqlite-jdbc:3.45.1.0'
-
-    // HikariCP para connection pooling (shaded)
     implementation 'com.zaxxer:HikariCP:5.1.0'
 }
 
@@ -38,7 +30,6 @@ processResources {
 }
 
 // Target Java 17 bytecode — compatible con Paper 1.20.x (Java 17) y 1.21.x (Java 21)
-// No se usa toolchain para evitar depender de una JDK específica en el agente de build.
 tasks.withType(JavaCompile).configureEach {
     options.encoding = 'UTF-8'
     options.release = 17
@@ -46,12 +37,15 @@ tasks.withType(JavaCompile).configureEach {
 
 shadowJar {
     archiveClassifier.set('')
-    relocate 'org.sqlite', 'com.zerowars.libs.sqlite'
+
+    // IMPORTANTE: NO relocar org.sqlite — sqlite-jdbc contiene código nativo (JNI).
+    // Los símbolos nativos (.so/.dll) están compilados con nombres basados en el
+    // paquete original. Relocar la clase Java rompe el enlace JNI porque la JVM
+    // busca Java_com_zerowars_libs_sqlite_... en vez de Java_org_sqlite_...
+    // Solo relocamos HikariCP (puro Java, sin nativas).
     relocate 'com.zaxxer.hikari', 'com.zerowars.libs.hikari'
-    // mergeServiceFiles preserva META-INF/services (registro JDBC del driver SQLite)
+
     mergeServiceFiles()
-    // Excluir sqlite-jdbc del minimize: sus clases solo se cargan por reflexión
-    // vía HikariCP/DriverManager — minimize() las eliminaría incorrectamente
     minimize {
         exclude(dependency('org.xerial:sqlite-jdbc:.*'))
     }

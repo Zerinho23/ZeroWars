@@ -29,19 +29,24 @@ public class DatabaseManager {
 
     /**
      * Inicializa el pool de conexiones y crea las tablas si no existen.
+     *
+     * NOTA sobre el driver SQLite:
+     * sqlite-jdbc contiene código nativo (JNI). NO debe relocarse el paquete
+     * org.sqlite en Shadow JAR — los símbolos nativos están compilados con el
+     * nombre original y rompen si se cambia el nombre de la clase Java.
+     * Por eso usamos "org.sqlite.JDBC" directamente (sin relocalización).
      */
     public void initialize() throws Exception {
         File dbFile = new File(plugin.getDataFolder(),
             plugin.getConfigManager().config().getString("database.file", "zerowars.db"));
         plugin.getDataFolder().mkdirs();
 
-        // Forzar carga del driver SQLite antes de que HikariCP lo intente.
-        // Necesario con Shadow JAR: el driver se registra via ServiceLoader y
-        // minimize() puede eliminarlo si no hay referencia directa en bytecode.
+        // Precarga explícita del driver SQLite antes de que HikariCP lo intente.
         try {
             Class.forName("org.sqlite.JDBC");
         } catch (ClassNotFoundException e) {
-            throw new RuntimeException("Driver SQLite no encontrado en el JAR shadeado.", e);
+            throw new RuntimeException("Driver SQLite no encontrado en el JAR. " +
+                "Asegúrate de que sqlite-jdbc no está excluido del Shadow JAR.", e);
         }
 
         HikariConfig config = new HikariConfig();
@@ -64,22 +69,15 @@ public class DatabaseManager {
 
         dataSource = new HikariDataSource(config);
 
-        // Crear schema inicial
         createTables();
         plugin.getLogger().info("Base de datos inicializada: " + dbFile.getName());
     }
 
-    /**
-     * Crea todas las tablas necesarias si no existen.
-     * Usa IF NOT EXISTS — seguro para llamar múltiples veces.
-     */
     private void createTables() throws SQLException {
         try (Connection conn = getConnection()) {
-            // Activar WAL mode para mejor concurrencia en SQLite
             conn.createStatement().execute("PRAGMA journal_mode=WAL");
             conn.createStatement().execute("PRAGMA foreign_keys=ON");
 
-            // ── Tabla de jugadores ────────────────────────────────────────────
             execute(conn, """
                 CREATE TABLE IF NOT EXISTS players (
                     uuid              TEXT PRIMARY KEY,
@@ -98,7 +96,6 @@ public class DatabaseManager {
                 )
                 """);
 
-            // ── Tabla de zonas (estado persistente) ───────────────────────────
             execute(conn, """
                 CREATE TABLE IF NOT EXISTS zones (
                     id                TEXT PRIMARY KEY,
@@ -111,7 +108,6 @@ public class DatabaseManager {
                 )
                 """);
 
-            // ── Tabla de cooldowns de consumibles ─────────────────────────────
             execute(conn, """
                 CREATE TABLE IF NOT EXISTS consumable_cooldowns (
                     player_uuid       TEXT NOT NULL,
@@ -121,7 +117,6 @@ public class DatabaseManager {
                 )
                 """);
 
-            // ── Tabla de cooldowns de recaptura ───────────────────────────────
             execute(conn, """
                 CREATE TABLE IF NOT EXISTS recapture_cooldowns (
                     player_uuid       TEXT NOT NULL,
@@ -131,7 +126,6 @@ public class DatabaseManager {
                 )
                 """);
 
-            // ── Tabla de clanes ────────────────────────────────────────────────
             execute(conn, """
                 CREATE TABLE IF NOT EXISTS clans (
                     id                TEXT PRIMARY KEY,
@@ -144,7 +138,6 @@ public class DatabaseManager {
                 )
                 """);
 
-            // ── Tabla de miembros de clan ─────────────────────────────────────
             execute(conn, """
                 CREATE TABLE IF NOT EXISTS clan_members (
                     player_uuid       TEXT PRIMARY KEY,
@@ -155,7 +148,6 @@ public class DatabaseManager {
                 )
                 """);
 
-            // ── Índices para queries frecuentes ──────────────────────────────
             execute(conn, "CREATE INDEX IF NOT EXISTS idx_players_kills ON players(kills DESC)");
             execute(conn, "CREATE INDEX IF NOT EXISTS idx_players_captures ON players(captures DESC)");
             execute(conn, "CREATE INDEX IF NOT EXISTS idx_players_domine ON players(total_domine_ms DESC)");
@@ -168,10 +160,6 @@ public class DatabaseManager {
         }
     }
 
-    /**
-     * Obtiene una conexión del pool.
-     * SIEMPRE usar try-with-resources para devolver la conexión al pool.
-     */
     public Connection getConnection() throws SQLException {
         if (dataSource == null || dataSource.isClosed()) {
             throw new SQLException("El pool de base de datos no está activo.");
@@ -179,9 +167,6 @@ public class DatabaseManager {
         return dataSource.getConnection();
     }
 
-    /**
-     * Cierra el pool de conexiones. Llamar solo en onDisable().
-     */
     public void close() {
         if (dataSource != null && !dataSource.isClosed()) {
             dataSource.close();
