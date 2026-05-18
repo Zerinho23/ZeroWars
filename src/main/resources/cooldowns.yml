@@ -1,0 +1,60 @@
+# ╔══════════════════════════════════════════╗
+# ║       ZeroWars - cooldowns.yml           ║
+# ║   Sistema de cooldowns y restricciones  ║
+# ╚══════════════════════════════════════════╝
+
+cooldowns:
+  # ── Cooldown Global ───────────────────────────
+  # Tiempo mínimo entre uso de cualquier consumible
+  global:
+    enabled: true
+    duration: 3  # segundos
+    message: "<red>⏳ Cooldown global: <white>%time%s"
+
+  # ── Cooldown por Consumible ───────────────────
+  # Estos valores son los defaults. Cada consumible puede
+  # tener su propio cooldown definido en consumables.yml
+  per-consumable:
+    speed_boost: 30
+    force_boost: 45
+    anti_knockback: 40
+    quick_heal: 60
+    dash: 25
+    resistance_shield: 90
+    lifesteal: 75
+    full_kit: 120
+
+  # ── Cooldown de Captura ───────────────────────
+  capture:
+    # Tiempo de espera tras fallar una captura
+    on-fail: 10
+    # Tiempo de espera tras ser cancelada la captura
+    on-cancel: 5
+
+  # ── Cooldown de Recaptura ─────────────────────
+  # Cuánto debe esperar un jugador para volver a capturar
+  # la misma zona que ya dominó
+  recapture:
+    default: 120  # segundos
+    # Configura por tipo de zona
+    types:
+      MINE: 120
+      ROOM: 90
+      RARE: 300
+      EVENT: 180
+      SPECIAL: 240
+
+  # ── Configuración de ActionBar de Cooldown ────
+  actionbar:
+    enabled: true
+    # Intervalo de actualización (en ticks)
+    update-interval: 20
+    # Formato del mensaje en ActionBar
+    format: "<yellow>⏳ %consumable% — <white>%time%s restantes"
+    # ¿Mostrar todos los cooldowns activos o solo el más reciente?
+    show-all: false
+
+  # ── PlaceholderAPI ────────────────────────────
+  placeholders:
+    # %zerowars_cooldown_<id>% devuelve segundos restantes
+    format: "%02d"  # formato numérico (2 dígitos)

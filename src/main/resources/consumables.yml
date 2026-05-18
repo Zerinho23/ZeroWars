@@ -1,0 +1,226 @@
+# ╔══════════════════════════════════════════╗
+# ║      ZeroWars - consumables.yml          ║
+# ║   Items consumibles PvP activables      ║
+# ╚══════════════════════════════════════════╝
+# Los consumibles se activan con CLICK DERECHO.
+# NO requieren comandos. Son items físicos en el inventario.
+
+consumables:
+  # ── Boost de Velocidad ───────────────────────
+  speed_boost:
+    id: "speed_boost"
+    name: "<gradient:#00ffaa:#00aaff>⚡ Boost de Velocidad"
+    lore:
+      - "<gray>Velocidad extrema por <white>10 segundos</white>."
+      - "<gray>Perfecta para perseguir o escapar."
+      - ""
+      - "<yellow>Click derecho para usar"
+      - "<dark_gray>Cooldown: <gray>30s"
+    material: SUGAR
+    custom-model-data: 1001
+    # Duración del efecto en ticks (20 = 1s)
+    duration: 200
+    # Amplificador del efecto (0 = nivel I, 1 = nivel II...)
+    amplifier: 2
+    # Cooldown en segundos
+    cooldown: 30
+    # Efectos de poción aplicados
+    effects:
+      - type: SPEED
+        duration: 200
+        amplifier: 2
+    # Efectos visuales al usar
+    particles:
+      - type: SPELL_WITCH
+        count: 20
+        offset: 0.3
+    sound: "ENTITY_ENDERMAN_TELEPORT"
+    # ¿Se puede usar durante cooldown global?
+    bypass-global-cooldown: false
+
+  # ── Boost de Fuerza ──────────────────────────
+  force_boost:
+    id: "force_boost"
+    name: "<gradient:#ff4444:#ff8800>💪 Golpe Brutal"
+    lore:
+      - "<gray>Fuerza devastadora por <white>8 segundos</white>."
+      - "<gray>Cada golpe cuenta el doble."
+      - ""
+      - "<yellow>Click derecho para usar"
+      - "<dark_gray>Cooldown: <gray>45s"
+    material: BLAZE_POWDER
+    custom-model-data: 1002
+    duration: 160
+    amplifier: 1
+    cooldown: 45
+    effects:
+      - type: INCREASE_DAMAGE
+        duration: 160
+        amplifier: 1
+    particles:
+      - type: FLAME
+        count: 15
+        offset: 0.5
+    sound: "ENTITY_BLAZE_SHOOT"
+    bypass-global-cooldown: false
+
+  # ── Escudo Anti-Knockback ────────────────────
+  anti_knockback:
+    id: "anti_knockback"
+    name: "<gradient:#8800ff:#4400aa>🛡 Escudo Gravitacional"
+    lore:
+      - "<gray>Inmune al knockback por <white>6 segundos</white>."
+      - "<gray>Ningún golpe te moverá."
+      - ""
+      - "<yellow>Click derecho para usar"
+      - "<dark_gray>Cooldown: <gray>40s"
+    material: IRON_INGOT
+    custom-model-data: 1003
+    duration: 120
+    amplifier: 0
+    cooldown: 40
+    effects:
+      - type: SLOW
+        duration: 120
+        amplifier: -1
+      - type: RESISTANCE
+        duration: 120
+        amplifier: 0
+    particles:
+      - type: CLOUD
+        count: 25
+        offset: 0.4
+    sound: "BLOCK_ANVIL_LAND"
+    bypass-global-cooldown: false
+
+  # ── Curación Rápida ──────────────────────────
+  quick_heal:
+    id: "quick_heal"
+    name: "<gradient:#ff6699:#ff0044>❤ Curación de Emergencia"
+    lore:
+      - "<gray>Cura instantáneamente <white>6 corazones</white>."
+      - "<gray>+ Regeneración por <white>5 segundos</white>."
+      - ""
+      - "<yellow>Click derecho para usar"
+      - "<dark_gray>Cooldown: <gray>60s"
+    material: GLISTERING_MELON_SLICE
+    custom-model-data: 1004
+    duration: 100
+    amplifier: 1
+    cooldown: 60
+    effects:
+      - type: HEAL
+        duration: 1
+        amplifier: 5
+      - type: REGENERATION
+        duration: 100
+        amplifier: 1
+    particles:
+      - type: HEART
+        count: 10
+        offset: 0.5
+    sound: "ENTITY_PLAYER_LEVELUP"
+    bypass-global-cooldown: false
+
+  # ── Dash / Teleport Rápido ───────────────────
+  dash:
+    id: "dash"
+    name: "<gradient:#00ffff:#0088ff>🌀 Dash"
+    lore:
+      - "<gray>Lanzamiento explosivo hacia adelante."
+      - "<gray>Úsalo para escapar o atacar."
+      - ""
+      - "<yellow>Click derecho para usar"
+      - "<dark_gray>Cooldown: <gray>25s"
+    material: ENDER_PEARL
+    custom-model-data: 1005
+    # El dash es especial: usa lanzamiento de velocidad
+    type: DASH
+    dash-power: 2.5
+    cooldown: 25
+    particles:
+      - type: PORTAL
+        count: 30
+        offset: 0.3
+    sound: "ENTITY_ENDERMAN_TELEPORT"
+    bypass-global-cooldown: false
+
+  # ── Resistencia Temporal ─────────────────────
+  resistance_shield:
+    id: "resistance_shield"
+    name: "<gradient:#aaaaff:#6666ff>🔮 Escudo de Resistencia"
+    lore:
+      - "<gray>Reducción de daño máxima por <white>5 segundos</white>."
+      - "<gray>Ideal para aguantar combates intensos."
+      - ""
+      - "<yellow>Click derecho para usar"
+      - "<dark_gray>Cooldown: <gray>90s"
+    material: OBSIDIAN
+    custom-model-data: 1006
+    duration: 100
+    amplifier: 3
+    cooldown: 90
+    effects:
+      - type: RESISTANCE
+        duration: 100
+        amplifier: 3
+    particles:
+      - type: ENCHANTMENT_TABLE
+        count: 40
+        offset: 0.6
+    sound: "BLOCK_ENCHANTMENT_TABLE_USE"
+    bypass-global-cooldown: false
+
+  # ── Robo de Vida ─────────────────────────────
+  lifesteal:
+    id: "lifesteal"
+    name: "<gradient:#ff0000:#800000>🩸 Sello de Vampiro"
+    lore:
+      - "<gray>Roba vida al atacar durante <white>8 segundos</white>."
+      - "<gray>Cada golpe regenera <white>0.5 corazones</white>."
+      - ""
+      - "<yellow>Click derecho para usar"
+      - "<dark_gray>Cooldown: <gray>75s"
+    material: FERMENTED_SPIDER_EYE
+    custom-model-data: 1007
+    type: LIFESTEAL
+    duration: 160
+    heal-per-hit: 1.0
+    cooldown: 75
+    particles:
+      - type: DRIP_LAVA
+        count: 15
+        offset: 0.4
+    sound: "ENTITY_PHANTOM_DEATH"
+    bypass-global-cooldown: false
+
+  # ── Kit Completo (recompensa rara) ───────────
+  full_kit:
+    id: "full_kit"
+    name: "<gradient:#ffaa00:#ff4400>📦 Kit de Combate"
+    lore:
+      - "<gray>Contiene: Speed II + Fuerza I + Curación."
+      - "<gray>Recompensa exclusiva de zonas."
+      - ""
+      - "<yellow>Click derecho para usar"
+      - "<dark_gray>Cooldown: <gray>120s"
+    material: BUNDLE
+    custom-model-data: 1008
+    type: MULTI_EFFECT
+    effects:
+      - type: SPEED
+        duration: 200
+        amplifier: 1
+      - type: INCREASE_DAMAGE
+        duration: 200
+        amplifier: 0
+      - type: REGENERATION
+        duration: 100
+        amplifier: 1
+    cooldown: 120
+    particles:
+      - type: TOTEM_OF_UNDYING
+        count: 50
+        offset: 0.5
+    sound: "UI_TOAST_CHALLENGE_COMPLETE"
+    bypass-global-cooldown: false

@@ -1,0 +1,113 @@
+# ╔══════════════════════════════════════════╗
+# ║        ZeroWars - rewards.yml            ║
+# ║   Sistema de recompensas por zona       ║
+# ╚══════════════════════════════════════════╝
+
+rewards:
+  # ── Mina Roja ───────────────────────────────
+  mina_roja_reward:
+    # Recompensa de captura (una sola vez al capturar)
+    on-capture:
+      money: 500
+      commands:
+        - "zerowars giveconsumable %player% speed_boost 1"
+      items:
+        - material: DIAMOND
+          amount: 3
+          name: "<aqua>Diamante de la Mina"
+          lore:
+            - "<gray>Obtenido en la Mina Roja"
+
+    # Recompensa pasiva (cada X segundos mientras se domina)
+    passive:
+      interval: 60  # cada 60 segundos
+      money: 100
+      items:
+        - material: IRON_INGOT
+          amount: 5
+
+    # Recompensa por nivel (mejora al subir de nivel)
+    per-level:
+      money-multiplier: 1.5  # x1.5 por cada nivel
+      extra-items-per-level:
+        1:
+          - material: GOLD_INGOT
+            amount: 2
+        3:
+          - material: DIAMOND
+            amount: 1
+        5:
+          - material: NETHERITE_SCRAP
+            amount: 1
+
+  # ── Room Central ────────────────────────────
+  room_central_reward:
+    on-capture:
+      money: 300
+      commands:
+        - "zerowars giveconsumable %player% force_boost 1"
+      items:
+        - material: GOLDEN_APPLE
+          amount: 2
+
+    passive:
+      interval: 45
+      money: 75
+      items:
+        - material: ARROW
+          amount: 16
+
+    per-level:
+      money-multiplier: 1.3
+
+  # ── Zona Dorada ──────────────────────────────
+  zona_dorada_reward:
+    on-capture:
+      money: 2000
+      commands:
+        - "zerowars giveconsumable %player% full_kit 1"
+        - "broadcast <gradient:#ffaa00:#ff6600>✦ %player% capturó la ZONA DORADA!"
+      items:
+        - material: ENCHANTED_GOLDEN_APPLE
+          amount: 1
+        - material: DIAMOND
+          amount: 10
+        - material: NETHERITE_INGOT
+          amount: 2
+
+    passive:
+      interval: 30
+      money: 500
+      items:
+        - material: EXPERIENCE_BOTTLE
+          amount: 5
+
+    per-level:
+      money-multiplier: 2.0
+
+  # ── Arena de Evento ──────────────────────────
+  arena_evento_reward:
+    on-capture:
+      money: 5000
+      commands:
+        - "broadcast <gradient:#ff4444:#ff0000>⚡ %player% DOMINA la Arena de Guerra!"
+        - "zerowars giveconsumable %player% mega_kit 1"
+      items:
+        - material: ENCHANTED_GOLDEN_APPLE
+          amount: 3
+        - material: TOTEM_OF_UNDYING
+          amount: 1
+        - material: NETHERITE_INGOT
+          amount: 5
+
+    passive:
+      interval: 20
+      money: 1000
+      items:
+        - material: GOLDEN_APPLE
+          amount: 3
+        - material: EXPERIENCE_BOTTLE
+          amount: 10
+
+    per-level:
+      money-multiplier: 3.0

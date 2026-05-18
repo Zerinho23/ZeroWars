@@ -1,0 +1,89 @@
+name: Build & Release
+
+on:
+  push:
+    tags:
+      - 'v*'
+  workflow_dispatch:
+    inputs:
+      release_tag:
+        description: 'Release tag (e.g. v1.0.0)'
+        required: false
+        default: 'v1.0.0'
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    name: Build JAR
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Java 21
+        uses: actions/setup-java@v4
+        with:
+          java-version: '21'
+          distribution: 'temurin'
+
+      - name: Setup Gradle
+        uses: gradle/actions/setup-gradle@v3
+
+      - name: Grant execute permission for gradlew
+        run: chmod +x gradlew
+
+      - name: Build Shadow JAR
+        run: ./gradlew shadowJar --no-daemon
+
+      - name: Get JAR name
+        id: jar
+        run: echo "path=$(ls build/libs/ZeroWars-*.jar | head -1)" >> $GITHUB_OUTPUT
+
+      - name: Upload build artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: ZeroWars-jar
+          path: ${{ steps.jar.outputs.path }}
+          retention-days: 14
+
+      - name: Create GitHub Release
+        if: startsWith(github.ref, 'refs/tags/') || github.event_name == 'workflow_dispatch'
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ github.ref_name || inputs.release_tag }}
+          name: "ZeroWars ${{ github.ref_name || inputs.release_tag }}"
+          body: |
+            ## ⚔ ZeroWars ${{ github.ref_name || inputs.release_tag }}
+
+            Plugin competitivo de control de zonas PvP para Paper 1.20.4+
+
+            ### ✅ Qué incluye
+            - Sistema de captura con BossBar / ActionBar en tiempo real
+            - 7 consumibles PvP activados por click derecho (sin comandos)
+            - Sistema Heat/Wanted con 3 niveles de amenaza
+            - Eventos automáticos con multiplicadores de recompensa
+            - Clanes integrados con zonas compartidas
+            - SQLite + HikariCP (async), PlaceholderAPI, MiniMessage
+            - API pública para integración con otros plugins
+
+            ### 📦 Instalación
+            1. Descarga `ZeroWars-${{ github.ref_name || inputs.release_tag }}.jar`
+            2. Cópialo a `plugins/`
+            3. Reinicia el servidor
+            4. Edita los YAMLs en `plugins/ZeroWars/`
+
+            ### ⚙ Requisitos
+            - Paper 1.20.4+
+            - Java 21+
+            - (Opcional) PlaceholderAPI
+
+            ---
+            **Autor:** zerinho23 | **Colaborador:** The_Titan19
+          files: ${{ steps.jar.outputs.path }}
+          draft: false
+          prerelease: false
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

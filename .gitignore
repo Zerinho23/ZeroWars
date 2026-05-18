@@ -1,0 +1,20 @@
+# Gradle
+.gradle/
+build/
+!gradle/wrapper/gradle-wrapper.jar
+
+# IDE
+.idea/
+*.iml
+.vscode/
+*.class
+
+# Plugin runtime files
+plugins/ZeroWars/
+zerowars.db
+*.db-shm
+*.db-wal
+
+# OS
+.DS_Store
+Thumbs.db

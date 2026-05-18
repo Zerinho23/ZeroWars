@@ -1,0 +1,127 @@
+# ╔══════════════════════════════════════════╗
+# ║        ZeroWars - events.yml             ║
+# ║   Eventos automáticos PvP               ║
+# ╚══════════════════════════════════════════╝
+
+events:
+  # ── Programación automática ───────────────────
+  scheduler:
+    enabled: true
+    # Intervalo entre eventos automáticos (en minutos)
+    interval: 60
+    # Aleatorizar el evento que se lanza
+    random: true
+    # Lista de eventos que pueden lanzarse automáticamente
+    auto-pool:
+      - double_loot
+      - legendary_mine
+      - gold_zone
+      - reward_rain
+
+  # ── Doble Loot ────────────────────────────────
+  double_loot:
+    id: "double_loot"
+    name: "<gradient:#ffaa00:#ff6600>💰 Doble Loot"
+    description: "¡Todas las zonas dan el doble de recompensas!"
+    duration: 15  # minutos
+    # Multiplicador de recompensas durante el evento
+    reward-multiplier: 2.0
+    # Comandos al iniciar
+    on-start:
+      broadcast: "<gradient:#ffaa00:#ff0000>⚡ ¡DOBLE LOOT ACTIVO por 15 minutos! ¡Captura zonas ahora!"
+      sound: "ENTITY_ENDER_DRAGON_GROWL"
+      commands: []
+    # Comandos al terminar
+    on-end:
+      broadcast: "<gray>⏹ El evento Doble Loot ha terminado."
+      commands: []
+    # Zonas afectadas (vacío = todas)
+    affected-zones: []
+    # ¿Activar zona especial de evento?
+    activate-event-zone: false
+
+  # ── Mina Legendaria ───────────────────────────
+  legendary_mine:
+    id: "legendary_mine"
+    name: "<gradient:#aa00ff:#6600ff>⚒ Mina Legendaria"
+    description: "¡Aparece una mina de loot épico por tiempo limitado!"
+    duration: 20
+    reward-multiplier: 3.0
+    on-start:
+      broadcast: "<gradient:#aa00ff:#ff00aa>⚒ ¡LA MINA LEGENDARIA ha aparecido! ¡Encuéntrala y conquístala!"
+      sound: "ENTITY_ENDER_DRAGON_AMBIENT"
+      commands:
+        - "zerowars debug activatezone arena_evento"
+    on-end:
+      broadcast: "<gray>⏹ La Mina Legendaria ha desaparecido."
+      commands:
+        - "zerowars debug deactivatezone arena_evento"
+    affected-zones:
+      - arena_evento
+    activate-event-zone: true
+
+  # ── Zona de Oro ───────────────────────────────
+  gold_zone:
+    id: "gold_zone"
+    name: "<gradient:#ffaa00:#ff6600>✦ Zona de Oro"
+    description: "¡La Zona Dorada da recompensas x5 temporalmente!"
+    duration: 10
+    reward-multiplier: 5.0
+    on-start:
+      broadcast: "<gradient:#ffaa00:#ff6600>✦ ¡La ZONA DORADA está en modo FRENÉTICO! x5 recompensas por 10 min!"
+      sound: "BLOCK_BEACON_ACTIVATE"
+      commands: []
+    on-end:
+      broadcast: "<gray>⏹ La Zona de Oro volvió a la normalidad."
+      commands: []
+    affected-zones:
+      - zona_dorada
+    activate-event-zone: false
+
+  # ── Lluvia de Recompensas ─────────────────────
+  reward_rain:
+    id: "reward_rain"
+    name: "<gradient:#00ffaa:#00aaff>🌧 Lluvia de Recompensas"
+    description: "¡Los dueños de zonas reciben recompensas extra cada 30 segundos!"
+    duration: 10
+    # Intervalo de recompensas especiales (segundos)
+    rain-interval: 30
+    reward-multiplier: 1.5
+    # Items repartidos durante lluvia
+    rain-items:
+      - material: GOLDEN_APPLE
+        amount: 1
+        chance: 0.5
+      - material: EXPERIENCE_BOTTLE
+        amount: 3
+        chance: 0.8
+      - material: DIAMOND
+        amount: 1
+        chance: 0.2
+    on-start:
+      broadcast: "<gradient:#00ffaa:#00aaff>🌧 ¡LLUVIA DE RECOMPENSAS! Los dueños de zonas recibirán drops extra."
+      sound: "WEATHER_RAIN"
+      commands: []
+    on-end:
+      broadcast: "<gray>⏹ La lluvia de recompensas terminó."
+      commands: []
+    affected-zones: []
+    activate-event-zone: false
+
+  # ── Evento PvP Total ──────────────────────────
+  total_war:
+    id: "total_war"
+    name: "<gradient:#ff0000:#800000>☠ Guerra Total"
+    description: "¡PvP sin restricciones y máximas recompensas!"
+    duration: 30
+    reward-multiplier: 4.0
+    on-start:
+      broadcast: "<gradient:#ff0000:#800000>☠ ¡GUERRA TOTAL INICIADA! ¡Sin tregua, sin piedad! 30 minutos de caos!"
+      sound: "ENTITY_WITHER_SPAWN"
+      commands:
+        - "broadcast <red>☠ Todas las zonas generan x4 recompensas. ¡PELEA!"
+    on-end:
+      broadcast: "<gray>⏹ Guerra Total finalizada. El orden regresa... por ahora."
+      commands: []
+    affected-zones: []
+    activate-event-zone: true

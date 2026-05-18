@@ -1,0 +1,125 @@
+# ╔══════════════════════════════════════════╗
+# ║         ZeroWars - zones.yml             ║
+# ║   Definición de zonas PvP               ║
+# ╚══════════════════════════════════════════╝
+# Cada zona tiene un ID único y su configuración completa.
+# Los corners definen el área rectangular de la zona.
+
+zones:
+  # ── Mina Roja (zona de ejemplo) ──────────────
+  mina_roja:
+    name: "<red>⛏ Mina Roja"
+    display-name: "Mina Roja"
+    type: MINE
+    world: world
+    # Esquinas del área (corner1 = mínimo, corner2 = máximo)
+    corner1:
+      x: 100
+      y: 60
+      z: 100
+    corner2:
+      x: 150
+      y: 80
+      z: 150
+    # Nivel inicial de la zona (afecta recompensas)
+    level: 1
+    max-level: 5
+    # Tiempo de captura en segundos
+    capture-time: 30
+    # Cooldown entre capturas del mismo jugador (segundos)
+    recapture-cooldown: 120
+    # Recompensas configuradas (referencia a rewards.yml)
+    rewards:
+      - mina_roja_reward
+    # ¿Zona activa?
+    enabled: true
+    # ¿Zona protegida? (solo captura, no destrucción)
+    protected: true
+    # Efectos visuales
+    effects:
+      border-color: RED
+      particle: REDSTONE
+      capture-particle: FLAME
+
+  # ── Room Central ─────────────────────────────
+  room_central:
+    name: "<gradient:#00aaff:#0044ff>🏟 Room Central"
+    display-name: "Room Central"
+    type: ROOM
+    world: world
+    corner1:
+      x: -50
+      y: 64
+      z: -50
+    corner2:
+      x: 50
+      y: 90
+      z: 50
+    level: 1
+    max-level: 3
+    capture-time: 20
+    recapture-cooldown: 90
+    rewards:
+      - room_central_reward
+    enabled: true
+    protected: true
+    effects:
+      border-color: BLUE
+      particle: SOUL_FIRE_FLAME
+      capture-particle: END_ROD
+
+  # ── Zona Rara (alta recompensa) ───────────────
+  zona_dorada:
+    name: "<gradient:#ffaa00:#ff6600>✦ Zona Dorada"
+    display-name: "Zona Dorada"
+    type: RARE
+    world: world
+    corner1:
+      x: 300
+      y: 64
+      z: 300
+    corner2:
+      x: 350
+      y: 85
+      z: 350
+    level: 3
+    max-level: 5
+    capture-time: 45
+    recapture-cooldown: 300
+    rewards:
+      - zona_dorada_reward
+    enabled: true
+    protected: true
+    effects:
+      border-color: GOLD
+      particle: TOTEM_OF_UNDYING
+      capture-particle: FIREWORKS_SPARK
+
+  # ── Zona de Evento (solo activa durante eventos) ──
+  arena_evento:
+    name: "<gradient:#ff4444:#ff0000>⚡ Arena de Guerra"
+    display-name: "Arena de Guerra"
+    type: EVENT
+    world: world
+    corner1:
+      x: 500
+      y: 64
+      z: 500
+    corner2:
+      x: 560
+      y: 90
+      z: 560
+    level: 5
+    max-level: 5
+    capture-time: 60
+    recapture-cooldown: 180
+    rewards:
+      - arena_evento_reward
+    # Solo activa durante eventos específicos
+    enabled: false
+    event-only: true
+    protected: false
+    effects:
+      border-color: RED
+      particle: LAVA
+      capture-particle: DRAGON_BREATH

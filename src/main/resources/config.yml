@@ -1,0 +1,82 @@
+# ╔══════════════════════════════════════════╗
+# ║         ZeroWars - config.yml            ║
+# ║   Plugin de control de zonas PvP        ║
+# ╚══════════════════════════════════════════╝
+
+general:
+  prefix: "<gradient:#ff4444:#ff8800>[ZeroWars]</gradient>"
+  language: "es"
+  debug: false
+  autosave-interval: 300
+  capture-radius: 20
+
+database:
+  file: "zerowars.db"
+  pool:
+    maximum-pool-size: 10
+    minimum-idle: 2
+    connection-timeout: 30000
+    idle-timeout: 600000
+    max-lifetime: 1800000
+
+zones:
+  update-interval: 20
+  start-delay: 3
+  cancel-on-leave: true
+  show-border-particles: true
+  particle-interval: 10
+  show-bossbar: true
+  reward-cooldown: 60
+  min-players-for-passive-rewards: 1
+
+capture:
+  base-time: 30
+  time-reduction-per-player: 5
+  min-capture-time: 10
+  defender-can-contest: true
+  pause-on-contest: true
+  leave-grace-period: 60
+
+heat:
+  enabled: true
+  levels:
+    1:
+      name: "<yellow>⚠ Amenaza"
+      threshold: 1
+      glow-color: "YELLOW"
+    2:
+      name: "<gold>🔥 Peligroso"
+      threshold: 3
+      glow-color: "GOLD"
+    3:
+      name: "<red>💀 BUSCADO"
+      threshold: 5
+      glow-color: "RED"
+  heat-duration: 600
+  announce-max-level: true
+  kill-reward-multiplier: 2.0
+
+ranking:
+  top-size: 10
+  update-interval: 60
+  categories:
+    - kills
+    - captures
+    - time-dominated
+    - zones-owned
+
+clans:
+  enabled: true
+  max-size: 10
+  use-external: false
+  external-plugin: "SimpleClans"
+
+effects:
+  sounds:
+    zone-enter: "ENTITY_PLAYER_LEVELUP"
+    zone-capture: "UI_TOAST_CHALLENGE_COMPLETE"
+    zone-lost: "ENTITY_WITHER_HURT"
+    consumable-use: "ENTITY_ENDERMAN_TELEPORT"
+    event-start: "ENTITY_ENDER_DRAGON_GROWL"
+  volume: 1.0
+  pitch: 1.0
