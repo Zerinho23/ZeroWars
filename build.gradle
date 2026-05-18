@@ -4,7 +4,7 @@ plugins {
 }
 
 group = 'com.zerowars'
-version = '1.0.1'
+version = '1.1.0'
 description = 'ZeroWars - Competitive PvP Zone Control Plugin'
 
 java {
@@ -20,8 +20,9 @@ repositories {
 }
 
 dependencies {
-    // Paper API
-    compileOnly 'io.papermc.paper:paper-api:1.20.4-R0.1-SNAPSHOT'
+    // Paper API — compilamos contra 1.20.1 (mínimo soportado).
+    // El plugin corre en 1.20.1 → 1.21.x gracias a VersionUtil.
+    compileOnly 'io.papermc.paper:paper-api:1.20.1-R0.1-SNAPSHOT'
 
     // PlaceholderAPI
     compileOnly 'me.clip:placeholderapi:2.11.5'
