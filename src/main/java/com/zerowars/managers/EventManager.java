@@ -75,8 +75,10 @@ public class EventManager {
         // Rain items
         List<ZoneEvent.RainItem> rainItems = new ArrayList<>();
         if (s.isList("rain-items")) {
-            for (var map : s.getMapList("rain-items")) {
-                String mat   = (String) map.getOrDefault("material", "IRON_INGOT");
+            for (Map<?, ?> rawMap : s.getMapList("rain-items")) {
+                @SuppressWarnings("unchecked")
+                Map<String, Object> map = (Map<String, Object>) rawMap;
+                String mat    = String.valueOf(map.getOrDefault("material", "IRON_INGOT"));
                 int    amount = ((Number) map.getOrDefault("amount", 1)).intValue();
                 double chance = ((Number) map.getOrDefault("chance", 0.5)).doubleValue();
                 rainItems.add(new ZoneEvent.RainItem(mat, amount, chance));
