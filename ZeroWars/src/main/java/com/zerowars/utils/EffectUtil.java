@@ -2,6 +2,7 @@ package com.zerowars.utils;
 
 import com.zerowars.models.Consumable;
 import com.zerowars.models.Zone;
+import org.bukkit.Color;
 import org.bukkit.Location;
 import org.bukkit.Particle;
 import org.bukkit.Sound;
@@ -10,10 +11,10 @@ import org.bukkit.entity.Player;
 
 /**
  * Utilidad para efectos visuales y sonoros.
- * Centraliza partículas, sonidos y efectos de captura/consumibles
- * para mantener el código de managers limpio.
+ * Centraliza partículas, sonidos y efectos de captura/consumibles.
  *
- * Nombres de Particle validados para Paper 1.20.4.
+ * Solo se usan constantes de Particle confirmadas en Paper 1.20.4-R0.1:
+ *   FLAME, PORTAL, END_ROD, LAVA, CRIT, HEART, REDSTONE (con DustOptions).
  */
 public final class EffectUtil {
 
@@ -34,15 +35,16 @@ public final class EffectUtil {
     }
 
     /**
-     * Fanfarria completa al completar una captura.
+     * Fanfarria al completar una captura.
      */
     public static void playCaptureFanfare(Player player, Zone zone) {
         Location loc = player.getLocation().add(0, 1, 0);
         World world = loc.getWorld();
         if (world == null) return;
 
-        world.spawnParticle(Particle.TOTEM_OF_UNDYING, loc, 80, 0.5, 1.0, 0.5, 0.1);
-        world.spawnParticle(Particle.FIREWORKS_SPARK,  loc, 50, 0.5, 1.5, 0.5, 0.2);
+        world.spawnParticle(Particle.CRIT,    loc, 60, 0.5, 1.0, 0.5, 0.2);
+        world.spawnParticle(Particle.FLAME,   loc, 30, 0.4, 1.2, 0.4, 0.08);
+        world.spawnParticle(Particle.END_ROD, loc, 20, 0.5, 1.5, 0.5, 0.1);
 
         player.playSound(loc, Sound.UI_TOAST_CHALLENGE_COMPLETE, 1.0f, 1.0f);
 
@@ -53,7 +55,8 @@ public final class EffectUtil {
     }
 
     /**
-     * Dibuja partículas en el borde inferior de una zona (se llama periódicamente).
+     * Dibuja partículas REDSTONE en el borde inferior de una zona.
+     * Se llama periódicamente desde el tick loop de ZoneManager.
      */
     public static void spawnZoneBorderParticles(Zone zone, World world) {
         if (world == null) return;
@@ -76,11 +79,13 @@ public final class EffectUtil {
         double length = Math.sqrt(dx * dx + dy * dy + dz * dz);
         int count = (int) (length / spacing);
         if (count == 0) return;
+
+        Particle.DustOptions dust = new Particle.DustOptions(Color.RED, 1.0f);
         for (int i = 0; i <= count; i++) {
             double t = (double) i / count;
-            Location loc = new Location(world, x1 + dx * t, y1 + dy * t, z1 + dz * t);
-            world.spawnParticle(Particle.REDSTONE, loc, 1,
-                    new Particle.DustOptions(org.bukkit.Color.RED, 1.0f));
+            Location loc = new Location(world,
+                    x1 + dx * t, y1 + dy * t, z1 + dz * t);
+            world.spawnParticle(Particle.REDSTONE, loc, 1, 0, 0, 0, 0, dust);
         }
     }
 
@@ -96,15 +101,15 @@ public final class EffectUtil {
 
         switch (consumable.getType()) {
             case DASH -> {
-                world.spawnParticle(Particle.PORTAL,         loc, 30, 0.3, 0.5, 0.3, 0.1);
-                world.spawnParticle(Particle.REVERSE_PORTAL, loc, 15, 0.2, 0.2, 0.2, 0.05);
+                world.spawnParticle(Particle.PORTAL,  loc, 30, 0.3, 0.5, 0.3, 0.1);
+                world.spawnParticle(Particle.END_ROD, loc, 10, 0.2, 0.2, 0.2, 0.05);
             }
             case LIFESTEAL -> {
-                world.spawnParticle(Particle.DRIPPING_LAVA, loc, 20, 0.3, 0.5, 0.3, 0.0);
-                world.spawnParticle(Particle.LAVA,          loc, 10, 0.2, 0.2, 0.2, 0.0);
+                world.spawnParticle(Particle.LAVA,  loc, 20, 0.3, 0.5, 0.3, 0.0);
+                world.spawnParticle(Particle.FLAME, loc, 10, 0.2, 0.2, 0.2, 0.03);
             }
             default -> {
-                world.spawnParticle(Particle.WITCH,  loc, 25, 0.3, 0.5, 0.3, 0.0);
+                world.spawnParticle(Particle.HEART,   loc, 10, 0.3, 0.3, 0.3, 0.0);
                 world.spawnParticle(Particle.END_ROD, loc, 10, 0.2, 0.5, 0.2, 0.05);
             }
         }
@@ -120,7 +125,7 @@ public final class EffectUtil {
     // ── Efectos de eventos ────────────────────────────────────────────────────
 
     /**
-     * Efecto de inicio de evento para todos los jugadores online.
+     * Sonido de inicio de evento para todos los jugadores online.
      */
     public static void broadcastEventEffect(org.bukkit.Server server, String soundName) {
         try {
