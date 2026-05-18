@@ -2,14 +2,17 @@
 
 <div align="center">
 
-![ZeroWars Banner](https://img.shields.io/badge/ZeroWars-v1.0.0-red?style=for-the-badge&logo=minecraft)
+![ZeroWars](https://img.shields.io/badge/ZeroWars-v1.0.1-red?style=for-the-badge&logo=minecraft)
 ![Java](https://img.shields.io/badge/Java-21-orange?style=for-the-badge&logo=openjdk)
 ![Paper](https://img.shields.io/badge/Paper-1.20.4+-blue?style=for-the-badge)
 ![License](https://img.shields.io/badge/License-MIT-green?style=for-the-badge)
+![Build](https://img.shields.io/github/actions/workflow/status/Zerinho23/ZeroWars/build-release.yml?branch=main&style=for-the-badge&label=Build)
 
 **Plugin competitivo de control de zonas PvP para Paper 1.20.4+**
 
 *Domina zonas, captura minas, destruye enemigos. Sin pausas. Sin tregua.*
+
+[📦 Descargar v1.0.1](https://github.com/Zerinho23/ZeroWars/releases/latest) · [🐛 Issues](https://github.com/Zerinho23/ZeroWars/issues)
 
 </div>
 
@@ -86,7 +89,7 @@ Todos los poderes funcionan mediante **ítems físicos** con click derecho:
 - (Opcional) PlaceholderAPI
 
 ### Pasos
-1. Descarga `ZeroWars-1.0.0.jar` de [Releases](../../releases)
+1. Descarga `ZeroWars-1.0.1.jar` de [Releases](https://github.com/Zerinho23/ZeroWars/releases/latest)
 2. Cópialo a la carpeta `plugins/` de tu servidor
 3. Reinicia el servidor
 4. Edita los archivos de configuración en `plugins/ZeroWars/`
@@ -207,11 +210,34 @@ ItemStack item = api.buildConsumableItem("speed_boost", 1);
 ## 📝 Compilar desde código fuente
 
 ```bash
-git clone https://github.com/zerinho23/ZeroWars.git
+git clone https://github.com/Zerinho23/ZeroWars.git
 cd ZeroWars
 gradle shadowJar
-# Resultado: build/libs/ZeroWars-1.0.0.jar
+# Resultado: build/libs/ZeroWars-1.0.1.jar
 ```
+
+---
+
+## 📝 Changelog
+
+### v1.0.1 — Stability Release
+- **Fix:** Partículas `TOTEM_OF_UNDYING`, `FIREWORKS_SPARK` y `WITCH` reemplazadas por constantes válidas en Paper 1.20.4-R0.1
+- **Fix:** `PotionEffectType.INSTANT_HEALTH` no existe en Paper 1.20.4 — se usa correctamente `HEAL`
+- **Fix:** NPE en `CaptureManager` cuando `getPlayerZoneId()` retorna `null`
+- **Fix:** NPE en `ConsumableManager.applyLifeStealHit()` — `getAttribute()` puede retornar `null`
+- **Fix:** `CaptureManager.onQuit()` verifica que la zona no sea `null` antes de cancelar la captura
+- **Fix:** Importaciones muertas eliminadas en `HeatManager` y `PlayerListener`
+- **Fix:** Shadow plugin migrado de `com.github.johnrengelman.shadow:8.1.1` a `com.gradleup.shadow:8.3.6` (soporte Java 21)
+- **Fix:** Workflow de release ahora resuelve el tag correctamente en `workflow_dispatch`
+
+### v1.0.0 — Initial Release
+- Sistema completo de captura de zonas con BossBar / ActionBar
+- 7 consumibles PvP con activación por click derecho (sin comandos)
+- Sistema Heat/Wanted con 3 niveles de amenaza y glow
+- 5 tipos de eventos automáticos con scheduler
+- Sistema de clanes con zonas compartidas
+- Ranking persistente con PlaceholderAPI
+- SQLite + HikariCP async, Adventure/MiniMessage, API pública
 
 ---
 
