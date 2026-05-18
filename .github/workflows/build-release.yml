@@ -31,12 +31,11 @@ jobs:
 
       - name: Setup Gradle
         uses: gradle/actions/setup-gradle@v3
-
-      - name: Grant execute permission for gradlew
-        run: chmod +x gradlew
+        with:
+          gradle-version: '8.7'
 
       - name: Build Shadow JAR
-        run: ./gradlew shadowJar --no-daemon
+        run: gradle shadowJar --no-daemon
 
       - name: Get JAR name
         id: jar
@@ -49,7 +48,7 @@ jobs:
           path: ${{ steps.jar.outputs.path }}
           retention-days: 14
 
-      - name: Create GitHub Release
+      - name: Create or update GitHub Release
         if: startsWith(github.ref, 'refs/tags/') || github.event_name == 'workflow_dispatch'
         uses: softprops/action-gh-release@v2
         with:
@@ -70,10 +69,9 @@ jobs:
             - API pública para integración con otros plugins
 
             ### 📦 Instalación
-            1. Descarga `ZeroWars-${{ github.ref_name || inputs.release_tag }}.jar`
+            1. Descarga el `.jar` de los assets
             2. Cópialo a `plugins/`
             3. Reinicia el servidor
-            4. Edita los YAMLs en `plugins/ZeroWars/`
 
             ### ⚙ Requisitos
             - Paper 1.20.4+
