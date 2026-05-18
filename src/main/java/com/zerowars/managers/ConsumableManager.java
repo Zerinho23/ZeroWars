@@ -161,8 +161,7 @@ public class ConsumableManager {
             case POTION_EFFECT, MULTI_EFFECT, HEAL -> {
                 for (Consumable.PotionEffect pe : c.getEffects()) {
                     // HEAL / INSTANT_HEALTH: curar HP directamente
-                    if (pe.type() == PotionEffectType.HEAL
-                            || pe.type() == PotionEffectType.INSTANT_HEALTH) {
+                    if (pe.type() == PotionEffectType.HEAL) {
                         double currentHp = player.getHealth();
                         double maxHp     = getMaxHealth(player);
                         player.setHealth(Math.min(maxHp, currentHp + (pe.amplifier() + 1) * 4.0));
