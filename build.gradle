@@ -4,14 +4,8 @@ plugins {
 }
 
 group = 'com.zerowars'
-version = '1.1.0'
+version = '1.1.1'
 description = 'ZeroWars - Competitive PvP Zone Control Plugin'
-
-java {
-    toolchain {
-        languageVersion = JavaLanguageVersion.of(21)
-    }
-}
 
 repositories {
     mavenCentral()
@@ -43,16 +37,24 @@ processResources {
     }
 }
 
+// Target Java 17 bytecode — compatible con Paper 1.20.x (Java 17) y 1.21.x (Java 21)
+// No se usa toolchain para evitar depender de una JDK específica en el agente de build.
 tasks.withType(JavaCompile).configureEach {
     options.encoding = 'UTF-8'
-    options.release = 21
+    options.release = 17
 }
 
 shadowJar {
     archiveClassifier.set('')
     relocate 'org.sqlite', 'com.zerowars.libs.sqlite'
     relocate 'com.zaxxer.hikari', 'com.zerowars.libs.hikari'
-    minimize()
+    // mergeServiceFiles preserva META-INF/services (registro JDBC del driver SQLite)
+    mergeServiceFiles()
+    // Excluir sqlite-jdbc del minimize: sus clases solo se cargan por reflexión
+    // vía HikariCP/DriverManager — minimize() las eliminaría incorrectamente
+    minimize {
+        exclude(dependency('org.xerial:sqlite-jdbc:.*'))
+    }
 }
 
 build.dependsOn shadowJar

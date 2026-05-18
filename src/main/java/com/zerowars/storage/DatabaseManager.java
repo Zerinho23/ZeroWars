@@ -35,6 +35,15 @@ public class DatabaseManager {
             plugin.getConfigManager().config().getString("database.file", "zerowars.db"));
         plugin.getDataFolder().mkdirs();
 
+        // Forzar carga del driver SQLite antes de que HikariCP lo intente.
+        // Necesario con Shadow JAR: el driver se registra via ServiceLoader y
+        // minimize() puede eliminarlo si no hay referencia directa en bytecode.
+        try {
+            Class.forName("org.sqlite.JDBC");
+        } catch (ClassNotFoundException e) {
+            throw new RuntimeException("Driver SQLite no encontrado en el JAR shadeado.", e);
+        }
+
         HikariConfig config = new HikariConfig();
         config.setJdbcUrl("jdbc:sqlite:" + dbFile.getAbsolutePath());
         config.setDriverClassName("org.sqlite.JDBC");

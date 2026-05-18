@@ -2,7 +2,7 @@
 
 <div align="center">
 
-![ZeroWars](https://img.shields.io/badge/ZeroWars-v1.0.1-red?style=for-the-badge&logo=minecraft)
+![ZeroWars](https://img.shields.io/badge/ZeroWars-v1.1.1-red?style=for-the-badge&logo=minecraft)
 ![Java](https://img.shields.io/badge/Java-21-orange?style=for-the-badge&logo=openjdk)
 ![Paper](https://img.shields.io/badge/Paper-1.20.4+-blue?style=for-the-badge)
 ![License](https://img.shields.io/badge/License-MIT-green?style=for-the-badge)
@@ -12,7 +12,7 @@
 
 *Domina zonas, captura minas, destruye enemigos. Sin pausas. Sin tregua.*
 
-[📦 Descargar v1.0.1](https://github.com/Zerinho23/ZeroWars/releases/latest) · [🐛 Issues](https://github.com/Zerinho23/ZeroWars/issues)
+[📦 Descargar v1.1.1](https://github.com/Zerinho23/ZeroWars/releases/latest) · [🐛 Issues](https://github.com/Zerinho23/ZeroWars/issues)
 
 </div>
 
@@ -89,7 +89,7 @@ Todos los poderes funcionan mediante **ítems físicos** con click derecho:
 - (Opcional) PlaceholderAPI
 
 ### Pasos
-1. Descarga `ZeroWars-1.0.1.jar` de [Releases](https://github.com/Zerinho23/ZeroWars/releases/latest)
+1. Descarga `ZeroWars-1.1.1.jar` de [Releases](https://github.com/Zerinho23/ZeroWars/releases/latest)
 2. Cópialo a la carpeta `plugins/` de tu servidor
 3. Reinicia el servidor
 4. Edita los archivos de configuración en `plugins/ZeroWars/`
@@ -213,7 +213,7 @@ ItemStack item = api.buildConsumableItem("speed_boost", 1);
 git clone https://github.com/Zerinho23/ZeroWars.git
 cd ZeroWars
 gradle shadowJar
-# Resultado: build/libs/ZeroWars-1.0.1.jar
+# Resultado: build/libs/ZeroWars-1.1.1.jar
 ```
 
 ---
