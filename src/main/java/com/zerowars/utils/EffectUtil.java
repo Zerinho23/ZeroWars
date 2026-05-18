@@ -11,10 +11,10 @@ import org.bukkit.entity.Player;
 
 /**
  * Utilidad para efectos visuales y sonoros.
- * Centraliza partículas, sonidos y efectos de captura/consumibles.
+ * Compatible con Paper/Purpur 1.20.1 → 1.21.x+.
  *
- * Solo se usan constantes de Particle confirmadas en Paper 1.20.4-R0.1:
- *   FLAME, PORTAL, END_ROD, LAVA, CRIT, HEART, REDSTONE (con DustOptions).
+ * Usa VersionUtil para resolver nombres de partículas renombradas entre versiones.
+ * Las partículas CRIT, FLAME, END_ROD, LAVA, HEART, PORTAL son estables en todas.
  */
 public final class EffectUtil {
 
@@ -55,8 +55,8 @@ public final class EffectUtil {
     }
 
     /**
-     * Dibuja partículas REDSTONE en el borde inferior de una zona.
-     * Se llama periódicamente desde el tick loop de ZoneManager.
+     * Dibuja partículas en el borde de la zona.
+     * Usa DUST (1.21+) / REDSTONE (≤1.20.x) a través de VersionUtil.
      */
     public static void spawnZoneBorderParticles(Zone zone, World world) {
         if (world == null) return;
@@ -80,12 +80,15 @@ public final class EffectUtil {
         int count = (int) (length / spacing);
         if (count == 0) return;
 
-        Particle.DustOptions dust = new Particle.DustOptions(Color.RED, 1.0f);
+        // getDustParticle() resuelve REDSTONE (1.20.x) o DUST (1.21+) automáticamente
+        Particle dustParticle = VersionUtil.getDustParticle();
+        Particle.DustOptions dustOpts = new Particle.DustOptions(Color.RED, 1.0f);
+
         for (int i = 0; i <= count; i++) {
             double t = (double) i / count;
             Location loc = new Location(world,
                     x1 + dx * t, y1 + dy * t, z1 + dz * t);
-            world.spawnParticle(Particle.REDSTONE, loc, 1, 0, 0, 0, 0, dust);
+            world.spawnParticle(dustParticle, loc, 1, 0, 0, 0, 0, dustOpts);
         }
     }
 
@@ -130,8 +133,8 @@ public final class EffectUtil {
     public static void broadcastEventEffect(org.bukkit.Server server, String soundName) {
         try {
             Sound sound = Sound.valueOf(soundName);
-            server.getOnlinePlayers().forEach(p ->
-                    p.playSound(p.getLocation(), sound, 1.0f, 1.0f));
+            server.getOnlinePlayers()
+                    .forEach(p -> p.playSound(p.getLocation(), sound, 1.0f, 1.0f));
         } catch (IllegalArgumentException ignored) {}
     }
 
