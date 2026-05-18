@@ -5,6 +5,7 @@ import com.zerowars.models.Consumable;
 import com.zerowars.models.PlayerData;
 import com.zerowars.utils.EffectUtil;
 import com.zerowars.utils.MessageUtil;
+import com.zerowars.utils.VersionUtil;
 import org.bukkit.Material;
 import org.bukkit.NamespacedKey;
 import org.bukkit.attribute.Attribute;
@@ -26,6 +27,10 @@ import java.util.concurrent.ConcurrentHashMap;
  * Registra, construye y aplica consumibles desde consumables.yml.
  * Los consumibles se identifican mediante PersistentDataContainer (NBT).
  *
+ * Compatible con Paper/Purpur 1.20.1 → 1.21.x+:
+ *  - PotionEffectType: usa VersionUtil.getPotionEffectType() y isInstantHeal()
+ *  - Attribute MAX_HEALTH: usa VersionUtil.getMaxHealthAttribute()
+ *
  * Activación: click derecho — nunca por comando.
  */
 public class ConsumableManager {
@@ -33,7 +38,7 @@ public class ConsumableManager {
     private final ZeroWars plugin;
     private final NamespacedKey consumableKey;
 
-    private final Map<String, Consumable> consumables   = new HashMap<>();
+    private final Map<String, Consumable> consumables     = new HashMap<>();
     private final Map<UUID, Integer>      lifeStealActive = new ConcurrentHashMap<>();
 
     public ConsumableManager(ZeroWars plugin) {
@@ -61,7 +66,8 @@ public class ConsumableManager {
                 plugin.getLogger().warning("Error parseando consumible '" + key + "': " + e.getMessage());
             }
         }
-        plugin.getLogger().info("Consumibles cargados: " + consumables.size());
+        plugin.getLogger().info("Consumibles cargados: " + consumables.size()
+                + " [Paper " + VersionUtil.getVersion() + "]");
     }
 
     private Consumable parseConsumable(String id, ConfigurationSection s) {
@@ -82,7 +88,7 @@ public class ConsumableManager {
         try { c.setType(Consumable.ConsumableType.valueOf(typeStr)); }
         catch (IllegalArgumentException e) { c.setType(Consumable.ConsumableType.POTION_EFFECT); }
 
-        // Efectos de poción
+        // Efectos de poción — usa VersionUtil para nombres cambiados en 1.21+
         List<Consumable.PotionEffect> effects = new ArrayList<>();
         if (s.isList("effects")) {
             for (Map<?, ?> rawMap : s.getMapList("effects")) {
@@ -91,10 +97,13 @@ public class ConsumableManager {
                 String typeName = String.valueOf(effectMap.getOrDefault("type", "SPEED"));
                 int duration    = ((Number) effectMap.getOrDefault("duration",  100)).intValue();
                 int amplifier   = ((Number) effectMap.getOrDefault("amplifier",   0)).intValue();
-                try {
-                    PotionEffectType pet = PotionEffectType.getByName(typeName);
-                    if (pet != null) effects.add(new Consumable.PotionEffect(pet, duration, amplifier));
-                } catch (Exception ignored) {}
+                PotionEffectType pet = VersionUtil.getPotionEffectType(typeName);
+                if (pet != null) {
+                    effects.add(new Consumable.PotionEffect(pet, duration, amplifier));
+                } else {
+                    plugin.getLogger().warning("PotionEffectType desconocido '" + typeName
+                            + "' en consumible '" + id + "'");
+                }
             }
         }
         c.setEffects(effects);
@@ -160,8 +169,8 @@ public class ConsumableManager {
         switch (c.getType()) {
             case POTION_EFFECT, MULTI_EFFECT, HEAL -> {
                 for (Consumable.PotionEffect pe : c.getEffects()) {
-                    // HEAL / INSTANT_HEALTH: curar HP directamente
-                    if (pe.type() == PotionEffectType.HEAL) {
+                    // Curación instantánea — compatible 1.20.x (HEAL) y 1.21+ (INSTANT_HEALTH)
+                    if (VersionUtil.isInstantHeal(pe.type())) {
                         double currentHp = player.getHealth();
                         double maxHp     = getMaxHealth(player);
                         player.setHealth(Math.min(maxHp, currentHp + (pe.amplifier() + 1) * 4.0));
@@ -188,10 +197,15 @@ public class ConsumableManager {
         }
     }
 
-    /** Obtiene el HP máximo del jugador de forma segura (nunca NPE). */
+    /**
+     * HP máximo del jugador de forma segura.
+     * Usa VersionUtil para obtener el Attribute correcto según la versión del servidor.
+     */
     private double getMaxHealth(Player player) {
-        AttributeInstance attr = player.getAttribute(Attribute.GENERIC_MAX_HEALTH);
-        return attr != null ? attr.getValue() : 20.0;
+        Attribute attr = VersionUtil.getMaxHealthAttribute();
+        if (attr == null) return 20.0;
+        AttributeInstance instance = player.getAttribute(attr);
+        return instance != null ? instance.getValue() : 20.0;
     }
 
     // ── Lifesteal ─────────────────────────────────────────────────────────────
