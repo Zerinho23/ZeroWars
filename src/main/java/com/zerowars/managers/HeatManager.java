@@ -6,7 +6,6 @@ import com.zerowars.models.Zone;
 import com.zerowars.utils.MessageUtil;
 import net.kyori.adventure.text.Component;
 import org.bukkit.Bukkit;
-import org.bukkit.ChatColor;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.entity.Player;
 
@@ -27,9 +26,8 @@ public class HeatManager {
 
     private final ZeroWars plugin;
 
-    // Thresholds de capturas por nivel (cargado desde config)
     private final Map<Integer, Integer> levelThresholds = new HashMap<>();
-    private final Map<Integer, String> levelNames       = new HashMap<>();
+    private final Map<Integer, String>  levelNames       = new HashMap<>();
     private int maxLevel = 3;
 
     public HeatManager(ZeroWars plugin) {
@@ -43,7 +41,7 @@ public class HeatManager {
         if (levels == null) return;
         for (String key : levels.getKeys(false)) {
             try {
-                int lvl = Integer.parseInt(key);
+                int lvl       = Integer.parseInt(key);
                 int threshold = levels.getInt(key + ".threshold", lvl * 2);
                 String name   = levels.getString(key + ".name", "Level " + lvl);
                 levelThresholds.put(lvl, threshold);
@@ -53,52 +51,41 @@ public class HeatManager {
         }
     }
 
-    // ── Eventos que modifican el heat ────────────────────────────────────────
+    // ── Eventos ───────────────────────────────────────────────────────────────
 
-    /**
-     * Llamado al capturar una zona. Incrementa heat si el sistema está habilitado.
-     */
     public void onZoneCaptured(Player player, Zone zone) {
         if (!plugin.getConfigManager().isHeatEnabled()) return;
         PlayerData data = plugin.getRankingManager().getCachedPlayerData(player.getUniqueId());
         if (data == null) return;
 
-        // El heat ya se incrementó en PlayerData.addCapture()
-        // Aquí calculamos el nivel
         int previousLevel = data.getHeatLevel();
-        int newLevel = calculateHeatLevel(data.getHeatCaptures());
+        int newLevel      = calculateHeatLevel(data.getHeatCaptures());
 
         if (newLevel > previousLevel) {
             data.setHeatLevel(newLevel);
-            // Renovar tiempo de expiración
             long heatDuration = plugin.getConfigManager().config()
                     .getLong("heat.heat-duration", 600);
             data.setHeatExpireTime(System.currentTimeMillis() + (heatDuration * 1000L));
 
-            // Notificar nivel
             String levelName = levelNames.getOrDefault(newLevel, "Nivel " + newLevel);
-            String msg = plugin.getConfigManager().getMessage("heat.level-up",
-                    "%player%", player.getName(), "%level_name%", levelName);
-            Bukkit.broadcast(MessageUtil.parse(msg));
+            Bukkit.broadcast(MessageUtil.parse(
+                    plugin.getConfigManager().getMessage("heat.level-up",
+                            "%player%", player.getName(), "%level_name%", levelName)));
 
-            // Nivel máximo: anuncio especial con bounty
             if (newLevel >= maxLevel) {
                 boolean announce = plugin.getConfigManager().config()
                         .getBoolean("heat.announce-max-level", true);
                 if (announce) {
-                    String maxMsg = plugin.getConfigManager().getMessage("heat.max-level-broadcast",
-                            "%player%", player.getName(),
-                            "%bounty%", String.valueOf(calculateBounty(data)));
-                    Bukkit.broadcast(MessageUtil.parse(maxMsg));
+                    Bukkit.broadcast(MessageUtil.parse(
+                            plugin.getConfigManager().getMessage("heat.max-level-broadcast",
+                                    "%player%", player.getName(),
+                                    "%bounty%", String.valueOf(calculateBounty(data)))));
                 }
-                applyWantedEffects(player);
+                player.setGlowing(true);
             }
         }
     }
 
-    /**
-     * Llamado al morir un jugador: resetea heat.
-     */
     public void onPlayerDeath(Player player, Player killer) {
         if (!plugin.getConfigManager().isHeatEnabled()) return;
         PlayerData data = plugin.getRankingManager().getCachedPlayerData(player.getUniqueId());
@@ -107,27 +94,19 @@ public class HeatManager {
         int heatLevel = data.getHeatLevel();
         if (heatLevel <= 0) return;
 
-        // Si tenía heat, el killer recibe recompensa
         if (killer != null) {
-            double multiplier = plugin.getConfigManager().getHeatKillRewardMultiplier();
-            double reward = calculateBounty(data) * multiplier;
-            String msg = plugin.getConfigManager().getMessage("heat.kill-reward",
-                    "%player%", player.getName(), "%reward%", String.format("%.0f", reward));
-            killer.sendMessage(MessageUtil.parse(msg));
+            double reward = calculateBounty(data)
+                    * plugin.getConfigManager().getHeatKillRewardMultiplier();
+            killer.sendMessage(MessageUtil.parse(
+                    plugin.getConfigManager().getMessage("heat.kill-reward",
+                            "%player%", player.getName(),
+                            "%reward%", String.format("%.0f", reward))));
         }
 
-        // Remover glow del jugador muerto
-        if (heatLevel >= maxLevel) {
-            player.setGlowing(false);
-        }
-
+        if (heatLevel >= maxLevel) player.setGlowing(false);
         data.resetHeat();
     }
 
-    /**
-     * Verifica si el heat de un jugador ha expirado y lo limpia.
-     * Llamar periódicamente desde el tick loop.
-     */
     public void checkExpiry(Player player) {
         if (!plugin.getConfigManager().isHeatEnabled()) return;
         PlayerData data = plugin.getRankingManager().getCachedPlayerData(player.getUniqueId());
@@ -135,7 +114,7 @@ public class HeatManager {
 
         long heatDuration = plugin.getConfigManager().config()
                 .getLong("heat.heat-duration", 600);
-        if (heatDuration <= 0) return; // 0 = permanente
+        if (heatDuration <= 0) return;
 
         if (System.currentTimeMillis() >= data.getHeatExpireTime()) {
             if (data.getHeatLevel() >= maxLevel) player.setGlowing(false);
@@ -156,13 +135,7 @@ public class HeatManager {
     }
 
     private double calculateBounty(PlayerData data) {
-        // Bounty base proporcional a kills y capturas
         return (data.getKills() * 50.0) + (data.getCaptures() * 100.0);
-    }
-
-    private void applyWantedEffects(Player player) {
-        // Glow rojo para el jugador más buscado
-        player.setGlowing(true);
     }
 
     // ── Consultas ─────────────────────────────────────────────────────────────
