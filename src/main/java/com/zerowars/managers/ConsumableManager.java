@@ -7,6 +7,8 @@ import com.zerowars.utils.EffectUtil;
 import com.zerowars.utils.MessageUtil;
 import org.bukkit.Material;
 import org.bukkit.NamespacedKey;
+import org.bukkit.attribute.Attribute;
+import org.bukkit.attribute.AttributeInstance;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
@@ -24,18 +26,15 @@ import java.util.concurrent.ConcurrentHashMap;
  * Registra, construye y aplica consumibles desde consumables.yml.
  * Los consumibles se identifican mediante PersistentDataContainer (NBT).
  *
- * Lifesteal activo: playerUUID → remaining duration ticks
+ * Activación: click derecho — nunca por comando.
  */
 public class ConsumableManager {
 
     private final ZeroWars plugin;
     private final NamespacedKey consumableKey;
 
-    // Cache de consumibles cargados: id → Consumable
-    private final Map<String, Consumable> consumables = new HashMap<>();
-
-    // Jugadores con lifesteal activo: UUID → ticks restantes
-    private final Map<UUID, Integer> lifeStealActive = new ConcurrentHashMap<>();
+    private final Map<String, Consumable> consumables   = new HashMap<>();
+    private final Map<UUID, Integer>      lifeStealActive = new ConcurrentHashMap<>();
 
     public ConsumableManager(ZeroWars plugin) {
         this.plugin = plugin;
@@ -43,7 +42,7 @@ public class ConsumableManager {
         loadConsumables();
     }
 
-    // ── Carga ────────────────────────────────────────────────────────────────
+    // ── Carga ─────────────────────────────────────────────────────────────────
 
     public void loadConsumables() {
         consumables.clear();
@@ -83,15 +82,15 @@ public class ConsumableManager {
         try { c.setType(Consumable.ConsumableType.valueOf(typeStr)); }
         catch (IllegalArgumentException e) { c.setType(Consumable.ConsumableType.POTION_EFFECT); }
 
-        // Cargar efectos de poción
+        // Efectos de poción
         List<Consumable.PotionEffect> effects = new ArrayList<>();
         if (s.isList("effects")) {
-            for (Map<?, ?> rawSection : s.getMapList("effects")) {
+            for (Map<?, ?> rawMap : s.getMapList("effects")) {
                 @SuppressWarnings("unchecked")
-                Map<String, Object> effectSection = (Map<String, Object>) rawSection;
-                String typeName = String.valueOf(effectSection.getOrDefault("type", "SPEED"));
-                int duration = ((Number) effectSection.getOrDefault("duration", 100)).intValue();
-                int amplifier = ((Number) effectSection.getOrDefault("amplifier", 0)).intValue();
+                Map<String, Object> effectMap = (Map<String, Object>) rawMap;
+                String typeName = String.valueOf(effectMap.getOrDefault("type", "SPEED"));
+                int duration    = ((Number) effectMap.getOrDefault("duration",  100)).intValue();
+                int amplifier   = ((Number) effectMap.getOrDefault("amplifier",   0)).intValue();
                 try {
                     PotionEffectType pet = PotionEffectType.getByName(typeName);
                     if (pet != null) effects.add(new Consumable.PotionEffect(pet, duration, amplifier));
@@ -100,12 +99,9 @@ public class ConsumableManager {
         }
         c.setEffects(effects);
 
-        // Dash config
         if (c.getType() == Consumable.ConsumableType.DASH) {
             c.setDashPower(s.getDouble("dash-power", 2.5));
         }
-
-        // Lifesteal config
         if (c.getType() == Consumable.ConsumableType.LIFESTEAL) {
             c.setLifestealDuration(s.getInt("duration", 160));
             c.setHealPerHit(s.getDouble("heal-per-hit", 1.0));
@@ -114,60 +110,49 @@ public class ConsumableManager {
         return c;
     }
 
-    // ── Uso de consumibles ────────────────────────────────────────────────────
+    // ── Uso ───────────────────────────────────────────────────────────────────
 
-    /**
-     * Intenta usar el consumible para el jugador dado.
-     * Verifica cooldowns, aplica efectos y notifica.
-     */
     public boolean useConsumable(Player player, String consumableId) {
         Consumable c = consumables.get(consumableId);
         if (c == null) return false;
 
         PlayerData data = plugin.getRankingManager().getCachedPlayerData(player.getUniqueId());
 
-        // Verificar cooldown global
+        // Cooldown global
         if (!c.isBypassGlobalCooldown()) {
             boolean globalEnabled = plugin.getConfigManager().cooldowns()
                     .getBoolean("cooldowns.global.enabled", true);
             if (globalEnabled && plugin.getCooldownManager().hasGlobalCooldown(player.getUniqueId())) {
                 long remaining = plugin.getCooldownManager().getGlobalCooldownSeconds(player.getUniqueId());
-                String msg = plugin.getConfigManager().getMessage("consumable.cooldown",
-                        "%consumable%", c.getName(), "%time%", String.valueOf(remaining));
-                player.sendActionBar(MessageUtil.parse(msg));
+                player.sendActionBar(MessageUtil.parse(
+                        plugin.getConfigManager().getMessage("consumable.cooldown",
+                                "%consumable%", c.getName(), "%time%", String.valueOf(remaining))));
                 return false;
             }
         }
 
-        // Verificar cooldown individual
+        // Cooldown individual
         if (data != null && data.isOnConsumableCooldown(consumableId)) {
             long remaining = data.getConsumableCooldownSeconds(consumableId);
-            String msg = plugin.getConfigManager().getMessage("consumable.cooldown",
-                    "%consumable%", c.getName(), "%time%", String.valueOf(remaining));
-            player.sendActionBar(MessageUtil.parse(msg));
+            player.sendActionBar(MessageUtil.parse(
+                    plugin.getConfigManager().getMessage("consumable.cooldown",
+                            "%consumable%", c.getName(), "%time%", String.valueOf(remaining))));
             return false;
         }
 
-        // Aplicar efecto
         applyEffect(player, c);
 
-        // Establecer cooldowns
         long globalSecs = plugin.getConfigManager().cooldowns()
                 .getLong("cooldowns.global.duration", 3);
         plugin.getCooldownManager().setGlobalCooldown(player.getUniqueId(), globalSecs);
-        if (data != null) {
-            data.setConsumableCooldown(consumableId, c.getCooldownSeconds());
-        }
+        if (data != null) data.setConsumableCooldown(consumableId, c.getCooldownSeconds());
         plugin.getCooldownManager().setLastActiveConsumable(player.getUniqueId(), consumableId);
 
-        // Feedback visual
         EffectUtil.playConsumableEffect(player, c);
 
-        // Mensaje de uso
         player.sendMessage(MessageUtil.parse(
                 plugin.getConfigManager().getMessage("consumable.used",
                         "%consumable%", c.getName())));
-
         return true;
     }
 
@@ -175,13 +160,12 @@ public class ConsumableManager {
         switch (c.getType()) {
             case POTION_EFFECT, MULTI_EFFECT, HEAL -> {
                 for (Consumable.PotionEffect pe : c.getEffects()) {
-                    if (pe.type() == PotionEffectType.HEAL) {
-                        // Curación instantánea: sumar HP
+                    // HEAL / INSTANT_HEALTH: curar HP directamente
+                    if (pe.type() == PotionEffectType.HEAL
+                            || pe.type() == PotionEffectType.INSTANT_HEALTH) {
                         double currentHp = player.getHealth();
-                        double maxHp = player.getAttribute(
-                                org.bukkit.attribute.Attribute.GENERIC_MAX_HEALTH).getValue();
-                        player.setHealth(Math.min(maxHp,
-                                currentHp + (pe.amplifier() * 2.0)));
+                        double maxHp     = getMaxHealth(player);
+                        player.setHealth(Math.min(maxHp, currentHp + (pe.amplifier() + 1) * 4.0));
                     } else {
                         player.addPotionEffect(
                                 new PotionEffect(pe.type(), pe.duration(), pe.amplifier()));
@@ -189,15 +173,13 @@ public class ConsumableManager {
                 }
             }
             case DASH -> {
-                Vector direction = player.getLocation().getDirection()
-                        .normalize()
+                Vector dir = player.getLocation().getDirection().normalize()
                         .multiply(c.getDashPower());
-                direction.setY(0.4);  // pequeño impulso vertical
-                player.setVelocity(direction);
+                dir.setY(0.4);
+                player.setVelocity(dir);
             }
             case LIFESTEAL -> {
                 lifeStealActive.put(player.getUniqueId(), c.getLifestealDuration());
-                // El efecto de lifesteal se procesa en ConsumableListener (EntityDamageByEntityEvent)
             }
             default -> {
                 for (Consumable.PotionEffect pe : c.getEffects()) {
@@ -207,39 +189,39 @@ public class ConsumableManager {
         }
     }
 
-    // ── Lifesteal ────────────────────────────────────────────────────────────
+    /** Obtiene el HP máximo del jugador de forma segura (nunca NPE). */
+    private double getMaxHealth(Player player) {
+        AttributeInstance attr = player.getAttribute(Attribute.GENERIC_MAX_HEALTH);
+        return attr != null ? attr.getValue() : 20.0;
+    }
 
-    /** ¿El jugador tiene lifesteal activo? */
-    public boolean hasLifeSteal(UUID uuid) { return lifeStealActive.containsKey(uuid); }
+    // ── Lifesteal ─────────────────────────────────────────────────────────────
 
-    /** Aplica el lifesteal al atacar. Decrementa duración. */
-    public void applyLifeStealHit(Player attacker, double amount) {
+    public boolean hasLifeSteal(UUID uuid) {
+        return lifeStealActive.containsKey(uuid);
+    }
+
+    public void applyLifeStealHit(Player attacker, double damage) {
         Integer remaining = lifeStealActive.get(attacker.getUniqueId());
         if (remaining == null) return;
 
-        Consumable c = consumables.values().stream()
+        double healAmount = consumables.values().stream()
                 .filter(con -> con.getType() == Consumable.ConsumableType.LIFESTEAL)
-                .findFirst().orElse(null);
-        double healAmount = c != null ? c.getHealPerHit() : 1.0;
+                .findFirst()
+                .map(Consumable::getHealPerHit)
+                .orElse(1.0);
 
         double currentHp = attacker.getHealth();
-        double maxHp = attacker.getAttribute(
-                org.bukkit.attribute.Attribute.GENERIC_MAX_HEALTH).getValue();
+        double maxHp     = getMaxHealth(attacker);
         attacker.setHealth(Math.min(maxHp, currentHp + healAmount));
 
         remaining--;
-        if (remaining <= 0) {
-            lifeStealActive.remove(attacker.getUniqueId());
-        } else {
-            lifeStealActive.put(attacker.getUniqueId(), remaining);
-        }
+        if (remaining <= 0) lifeStealActive.remove(attacker.getUniqueId());
+        else                lifeStealActive.put(attacker.getUniqueId(), remaining);
     }
 
-    // ── Construcción de Items ─────────────────────────────────────────────────
+    // ── Construcción de ítems ─────────────────────────────────────────────────
 
-    /**
-     * Construye el ItemStack de un consumible con NBT para identificación.
-     */
     public ItemStack buildItem(String consumableId, int amount) {
         Consumable c = consumables.get(consumableId);
         if (c == null) return new ItemStack(Material.BARRIER);
@@ -248,20 +230,14 @@ public class ConsumableManager {
         ItemMeta meta = item.getItemMeta();
         if (meta == null) return item;
 
-        // Nombre con MiniMessage
         meta.displayName(MessageUtil.parse(c.getName()));
 
-        // Lore
         List<net.kyori.adventure.text.Component> lore = new ArrayList<>();
-        for (String line : c.getLore()) {
-            lore.add(MessageUtil.parse(line));
-        }
+        for (String line : c.getLore()) lore.add(MessageUtil.parse(line));
         meta.lore(lore);
 
-        // Custom model data
         if (c.hasCustomModelData()) meta.setCustomModelData(c.getCustomModelData());
 
-        // NBT: marcar el item con el ID del consumible para identificarlo en clicks
         meta.getPersistentDataContainer().set(
                 consumableKey, PersistentDataType.STRING, consumableId);
 
@@ -269,9 +245,6 @@ public class ConsumableManager {
         return item;
     }
 
-    /**
-     * Extrae el ID de consumible de un item (null si no es consumible).
-     */
     public String getConsumableId(ItemStack item) {
         if (item == null || !item.hasItemMeta()) return null;
         return item.getItemMeta().getPersistentDataContainer()
@@ -280,13 +253,7 @@ public class ConsumableManager {
 
     // ── Getters ───────────────────────────────────────────────────────────────
 
-    public Optional<Consumable> getConsumable(String id) {
-        return Optional.ofNullable(consumables.get(id));
-    }
-
-    public Collection<Consumable> getAllConsumables() {
-        return Collections.unmodifiableCollection(consumables.values());
-    }
-
-    public boolean consumableExists(String id) { return consumables.containsKey(id); }
+    public Optional<Consumable> getConsumable(String id)  { return Optional.ofNullable(consumables.get(id)); }
+    public Collection<Consumable> getAllConsumables()      { return Collections.unmodifiableCollection(consumables.values()); }
+    public boolean consumableExists(String id)             { return consumables.containsKey(id); }
 }
