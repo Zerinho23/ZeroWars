@@ -1,7 +1,4 @@
-# ╔══════════════════════════════════════════╗
-# ║         ZeroWars - config.yml            ║
-# ║   Plugin de control de zonas PvP        ║
-# ╚══════════════════════════════════════════╝
+# ZeroWars - config.yml
 
 general:
   prefix: "<gradient:#ff4444:#ff8800>[ZeroWars]</gradient>"
@@ -11,7 +8,26 @@ general:
   capture-radius: 20
 
 database:
+  # Tipo de base de datos: sqlite | mysql
+  # SQLite  -> ideal para servidores pequenos/medianos, sin configuracion extra.
+  # MySQL   -> recomendado para alta concurrencia. Compatible con MariaDB.
+  type: sqlite
+
+  # -- SQLite (solo cuando type: sqlite) ------------------------------------
   file: "zerowars.db"
+
+  # -- MySQL / MariaDB (solo cuando type: mysql) ----------------------------
+  mysql:
+    host: "localhost"
+    port: 3306
+    database: "zerowars"
+    username: "root"
+    password: "password"
+    ssl: false
+
+  # -- Pool de conexiones ---------------------------------------------------
+  # Nota: en SQLite el pool se limita a 1 conexion internamente para evitar
+  # SQLITE_BUSY por escrituras concurrentes (sin importar este valor).
   pool:
     maximum-pool-size: 10
     minimum-idle: 2
@@ -41,15 +57,15 @@ heat:
   enabled: true
   levels:
     1:
-      name: "<yellow>⚠ Amenaza"
+      name: "<yellow>Amenaza"
       threshold: 1
       glow-color: "YELLOW"
     2:
-      name: "<gold>🔥 Peligroso"
+      name: "<gold>Peligroso"
       threshold: 3
       glow-color: "GOLD"
     3:
-      name: "<red>💀 BUSCADO"
+      name: "<red>BUSCADO"
       threshold: 5
       glow-color: "RED"
   heat-duration: 600
