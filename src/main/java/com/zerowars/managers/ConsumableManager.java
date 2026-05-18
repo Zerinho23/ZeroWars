@@ -86,10 +86,12 @@ public class ConsumableManager {
         // Cargar efectos de poción
         List<Consumable.PotionEffect> effects = new ArrayList<>();
         if (s.isList("effects")) {
-            for (var effectSection : s.getMapList("effects")) {
-                String typeName = (String) effectSection.getOrDefault("type", "SPEED");
-                int duration = (int) effectSection.getOrDefault("duration", 100);
-                int amplifier = (int) effectSection.getOrDefault("amplifier", 0);
+            for (Map<?, ?> rawSection : s.getMapList("effects")) {
+                @SuppressWarnings("unchecked")
+                Map<String, Object> effectSection = (Map<String, Object>) rawSection;
+                String typeName = String.valueOf(effectSection.getOrDefault("type", "SPEED"));
+                int duration = ((Number) effectSection.getOrDefault("duration", 100)).intValue();
+                int amplifier = ((Number) effectSection.getOrDefault("amplifier", 0)).intValue();
                 try {
                     PotionEffectType pet = PotionEffectType.getByName(typeName);
                     if (pet != null) effects.add(new Consumable.PotionEffect(pet, duration, amplifier));
