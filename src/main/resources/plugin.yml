@@ -1,107 +1,111 @@
 name: ZeroWars
-  version: '${version}'
-  main: com.zerowars.ZeroWars
-  api-version: '1.20'
-  description: Competitive PvP Zone Control Plugin
-  authors: [zerinho23]
-  contributors: [The_Titan19]
-  website: https://github.com/zerinho23/ZeroWars
+    version: '${version}'
+    main: com.zerowars.ZeroWars
+    api-version: '1.20'
+    description: Competitive PvP Zone Control Plugin
+    authors: [zerinho23]
+    contributors: [The_Titan19]
+    website: https://github.com/zerinho23/ZeroWars
 
-  softdepend:
-    - PlaceholderAPI
-    - Vault
+    softdepend:
+      - PlaceholderAPI
+      - Vault
 
-  commands:
-    zerowars:
-      description: Comando principal de administracion
-      usage: /zerowars <subcomando>
-      aliases: [zw]
-      permission: zerowars.admin
-    zone:
-      description: Muestra info de la zona actual
-      usage: /zone
-      permission: zerowars.player
-    zones:
-      description: Lista todas las zonas activas
-      usage: /zones
-      permission: zerowars.player
-    top:
-      description: Muestra el ranking de jugadores y clanes
-      usage: /top [players|clans|zones]
-      permission: zerowars.player
-    events:
-      description: Muestra los eventos activos
-      usage: /events
-      permission: zerowars.player
+    commands:
+      zerowars:
+        description: Comando principal de administracion
+        usage: /zerowars <subcomando>
+        aliases: [zw]
+        permission: zerowars.admin
+      zone:
+        description: Muestra info de la zona actual
+        usage: /zone
+        permission: zerowars.player
+      zones:
+        description: Lista todas las zonas activas
+        usage: /zones
+        permission: zerowars.player
+      top:
+        description: Muestra el ranking de jugadores y clanes
+        usage: /top [players|clans|zones]
+        permission: zerowars.player
+      events:
+        description: Muestra los eventos activos
+        usage: /events
+        permission: zerowars.player
 
-  permissions:
-    zerowars.admin:
-      description: Acceso admin completo a ZeroWars
-      default: op
-      children:
-        zerowars.admin.reload: true
-        zerowars.admin.createzone: true
-        zerowars.admin.deletezone: true
-        zerowars.admin.setreward: true
-        zerowars.admin.giveconsumable: true
-        zerowars.admin.startevent: true
-        zerowars.admin.stopevent: true
-        zerowars.admin.debug: true
-        zerowars.bypass: true
+    permissions:
+      zerowars.admin:
+        description: Acceso admin completo a ZeroWars
+        default: op
+        children:
+          zerowars.admin.reload: true
+          zerowars.admin.createzone: true
+          zerowars.admin.deletezone: true
+          zerowars.admin.setreward: true
+          zerowars.admin.giveconsumable: true
+          zerowars.admin.startevent: true
+          zerowars.admin.stopevent: true
+          zerowars.admin.debug: true
+          zerowars.admin.menu: true
+          zerowars.bypass: true
 
-    zerowars.admin.reload:
-      description: Recargar la configuracion del plugin
-      default: op
-    zerowars.admin.createzone:
-      description: Crear una zona nueva
-      default: op
-    zerowars.admin.deletezone:
-      description: Eliminar una zona existente
-      default: op
-    zerowars.admin.setreward:
-      description: Asignar o quitar rewards de una zona
-      default: op
-    zerowars.admin.giveconsumable:
-      description: Dar consumibles PvP a jugadores
-      default: op
-    zerowars.admin.startevent:
-      description: Iniciar un evento PvP manualmente
-      default: op
-    zerowars.admin.stopevent:
-      description: Detener un evento activo
-      default: op
-    zerowars.admin.debug:
-      description: Activar o desactivar el modo debug
-      default: op
+      zerowars.admin.reload:
+        description: Recargar la configuracion del plugin
+        default: op
+      zerowars.admin.createzone:
+        description: Crear una zona nueva
+        default: op
+      zerowars.admin.deletezone:
+        description: Eliminar una zona existente
+        default: op
+      zerowars.admin.setreward:
+        description: Asignar o quitar rewards de una zona
+        default: op
+      zerowars.admin.giveconsumable:
+        description: Dar consumibles PvP a jugadores
+        default: op
+      zerowars.admin.startevent:
+        description: Iniciar un evento PvP manualmente
+        default: op
+      zerowars.admin.stopevent:
+        description: Detener un evento activo
+        default: op
+      zerowars.admin.debug:
+        description: Activar o desactivar el modo debug
+        default: op
+      zerowars.admin.menu:
+        description: Abrir el menu GUI de administracion
+        default: op
 
-    zerowars.bypass:
-      description: Bypass de cooldowns y restricciones de zona
-      default: op
+      zerowars.bypass:
+        description: Bypass de cooldowns y restricciones de zona
+        default: op
 
-    zerowars.player:
-      description: Acceso a comandos de jugador
-      default: true
-      children:
-        zerowars.zone.info: true
-        zerowars.zones.list: true
-        zerowars.top.view: true
-        zerowars.events.view: true
+      zerowars.player:
+        description: Acceso a comandos de jugador
+        default: true
+        children:
+          zerowars.zone.info: true
+          zerowars.zones.list: true
+          zerowars.top.view: true
+          zerowars.events.view: true
 
-    zerowars.zone.info:
-      description: Ver info de la zona actual
-      default: true
-    zerowars.zones.list:
-      description: Ver lista de zonas
-      default: true
-    zerowars.top.view:
-      description: Ver el ranking
-      default: true
-    zerowars.events.view:
-      description: Ver eventos activos
-      default: true
-    zerowars.consumable.use:
-      description: Usar consumibles PvP
-      default: true
-    zerowars.zone.capture:
-      description: Capturar zonas PvP
-      default: true
+      zerowars.zone.info:
+        description: Ver info de la zona actual
+        default: true
+      zerowars.zones.list:
+        description: Ver lista de zonas
+        default: true
+      zerowars.top.view:
+        description: Ver el ranking
+        default: true
+      zerowars.events.view:
+        description: Ver eventos activos
+        default: true
+      zerowars.consumable.use:
+        description: Usar consumibles PvP
+        default: true
+      zerowars.zone.capture:
+        description: Capturar zonas PvP
+        default: true

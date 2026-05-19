@@ -1,58 +1,53 @@
 plugins {
-      id 'java'
-      id 'com.gradleup.shadow' version '8.3.6'
-  }
+        id 'java'
+        id 'com.gradleup.shadow' version '8.3.6'
+    }
 
-  group = 'com.zerowars'
-  version = '1.2.0'
-  description = 'ZeroWars - Competitive PvP Zone Control Plugin'
+    group = 'com.zerowars'
+    version = '1.3.0'
+    description = 'ZeroWars - Competitive PvP Zone Control Plugin'
 
-  repositories {
-      mavenCentral()
-      maven { url = 'https://repo.papermc.io/repository/maven-public/' }
-      maven { url = 'https://repo.extendedclip.com/content/repositories/placeholderapi/' }
-      maven { url = 'https://jitpack.io' }
-  }
+    repositories {
+        mavenCentral()
+        maven { url = 'https://repo.papermc.io/repository/maven-public/' }
+        maven { url = 'https://repo.extendedclip.com/content/repositories/placeholderapi/' }
+        maven { url = 'https://jitpack.io' }
+    }
 
-  dependencies {
-      compileOnly 'io.papermc.paper:paper-api:1.20.1-R0.1-SNAPSHOT'
-      compileOnly 'me.clip:placeholderapi:2.11.5'
-      // Vault API -- economia de dinero (softdep, opcional)
-      compileOnly 'com.github.MilkBowl:VaultAPI:1.7'
-      implementation 'org.xerial:sqlite-jdbc:3.45.1.0'
-      implementation 'com.zaxxer:HikariCP:5.1.0'
-      // MySQL/MariaDB connector (activo cuando database.type: mysql)
-      implementation 'com.mysql:mysql-connector-j:8.3.0'
-  }
+    dependencies {
+        compileOnly 'io.papermc.paper:paper-api:1.20.1-R0.1-SNAPSHOT'
+        compileOnly 'me.clip:placeholderapi:2.11.5'
+        compileOnly 'com.github.MilkBowl:VaultAPI:1.7'
+        implementation 'org.xerial:sqlite-jdbc:3.45.1.0'
+        implementation 'com.zaxxer:HikariCP:5.1.0'
+        implementation 'com.mysql:mysql-connector-j:8.3.0'
+    }
 
-  processResources {
-      def props = [version: version]
-      inputs.properties(props)
-      filteringCharset 'UTF-8'
-      filesMatching('plugin.yml') {
-          expand(props)
-      }
-  }
+    processResources {
+        def props = [version: version]
+        inputs.properties(props)
+        filteringCharset 'UTF-8'
+        filesMatching('plugin.yml') {
+            expand(props)
+        }
+    }
 
-  // Target Java 17 bytecode -- compatible con Paper 1.20.x (Java 17) y 1.21.x (Java 21)
-  tasks.withType(JavaCompile).configureEach {
-      options.encoding = 'UTF-8'
-      options.release = 17
-  }
+    tasks.withType(JavaCompile).configureEach {
+        options.encoding = 'UTF-8'
+        options.release = 17
+    }
 
-  shadowJar {
-      archiveClassifier.set('')
+    shadowJar {
+        archiveClassifier.set('')
 
-      // IMPORTANTE: NO relocar org.sqlite -- sqlite-jdbc contiene codigo nativo (JNI).
-      relocate 'com.zaxxer.hikari', 'com.zerowars.libs.hikari'
-      relocate 'com.mysql',         'com.zerowars.libs.mysql'
+        relocate 'com.zaxxer.hikari', 'com.zerowars.libs.hikari'
+        relocate 'com.mysql',         'com.zerowars.libs.mysql'
 
-      mergeServiceFiles()
-      minimize {
-          exclude(dependency('org.xerial:sqlite-jdbc:.*'))
-          // mysql-connector-j usa reflection interna
-          exclude(dependency('com.mysql:mysql-connector-j:.*'))
-      }
-  }
+        mergeServiceFiles()
+        minimize {
+            exclude(dependency('org.xerial:sqlite-jdbc:.*'))
+            exclude(dependency('com.mysql:mysql-connector-j:.*'))
+        }
+    }
 
-  build.dependsOn shadowJar
+    build.dependsOn shadowJar
