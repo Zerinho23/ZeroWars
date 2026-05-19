@@ -11,8 +11,10 @@ package com.zerowars;
   import com.zerowars.listeners.ConsumableListener;
   import com.zerowars.listeners.GuiListener;
   import com.zerowars.listeners.PlayerListener;
+  import com.zerowars.listeners.WandListener;
   import com.zerowars.listeners.ZoneCaptureListener;
   import com.zerowars.managers.CaptureManager;
+  import com.zerowars.managers.ChatInputManager;
   import com.zerowars.managers.ClanManager;
   import com.zerowars.managers.ConsumableManager;
   import com.zerowars.managers.CooldownManager;
@@ -21,32 +23,31 @@ package com.zerowars;
   import com.zerowars.managers.RankingManager;
   import com.zerowars.managers.RewardManager;
   import com.zerowars.managers.ZoneManager;
+  import com.zerowars.managers.ZoneWandManager;
   import com.zerowars.placeholders.ZeroWarsPlaceholders;
   import com.zerowars.storage.DatabaseManager;
   import org.bukkit.plugin.java.JavaPlugin;
 
   import java.util.logging.Level;
 
-  /**
-   * ZeroWars - Competitive PvP Zone Control Plugin
-   * Autor: zerinho23 | Colaborador: The_Titan19
-   */
   public final class ZeroWars extends JavaPlugin {
 
       private static ZeroWars instance;
 
-      private ConfigManager configManager;
-      private DatabaseManager databaseManager;
-      private ZoneManager zoneManager;
-      private CaptureManager captureManager;
+      private ConfigManager     configManager;
+      private DatabaseManager   databaseManager;
+      private ZoneManager       zoneManager;
+      private CaptureManager    captureManager;
       private ConsumableManager consumableManager;
-      private CooldownManager cooldownManager;
-      private EventManager eventManager;
-      private HeatManager heatManager;
-      private RankingManager rankingManager;
-      private ClanManager clanManager;
-      private RewardManager rewardManager;
-      private GuiManager guiManager;
+      private CooldownManager   cooldownManager;
+      private EventManager      eventManager;
+      private HeatManager       heatManager;
+      private RankingManager    rankingManager;
+      private ClanManager       clanManager;
+      private RewardManager     rewardManager;
+      private GuiManager        guiManager;
+      private ZoneWandManager   zoneWandManager;
+      private ChatInputManager  chatInputManager;
 
       private ZeroWarsAPI api;
 
@@ -73,8 +74,8 @@ package com.zerowars;
           this.api = new ZeroWarsAPI(this);
           getLogger().info("ZeroWars v" + getDescription().getVersion() + " activado en "
                   + (System.currentTimeMillis() - start) + "ms | Zonas: " + zoneManager.getZoneCount()
-                  + " | Vault: " + (rewardManager.isVaultEnabled() ? "SI" : "NO (dinero desactivado)")
-                  + " | GUI: activo");
+                  + " | Vault: " + (rewardManager.isVaultEnabled() ? "SI" : "NO")
+                  + " | GUI+Wand: activos");
       }
 
       @Override
@@ -116,15 +117,19 @@ package com.zerowars;
           this.rewardManager     = new RewardManager(this);
           this.zoneManager.startPassiveRewardTick();
           this.guiManager        = new GuiManager(this);
+          this.zoneWandManager   = new ZoneWandManager(this);
+          this.chatInputManager  = new ChatInputManager(this);
           getLogger().info("Managers inicializados correctamente.");
       }
 
       private void registerListeners() {
           var pm = getServer().getPluginManager();
-          pm.registerEvents(new PlayerListener(this),       this);
-          pm.registerEvents(new ZoneCaptureListener(this),  this);
-          pm.registerEvents(new ConsumableListener(this),   this);
-          pm.registerEvents(new GuiListener(),              this);
+          pm.registerEvents(new PlayerListener(this),      this);
+          pm.registerEvents(new ZoneCaptureListener(this), this);
+          pm.registerEvents(new ConsumableListener(this),  this);
+          pm.registerEvents(new GuiListener(),             this);
+          pm.registerEvents(new WandListener(this),        this);
+          pm.registerEvents(chatInputManager,              this);
           getLogger().info("Listeners registrados.");
       }
 
@@ -163,5 +168,7 @@ package com.zerowars;
       public ClanManager getClanManager()               { return clanManager; }
       public RewardManager getRewardManager()           { return rewardManager; }
       public GuiManager getGuiManager()                 { return guiManager; }
+      public ZoneWandManager getZoneWandManager()       { return zoneWandManager; }
+      public ChatInputManager getChatInputManager()     { return chatInputManager; }
       public ZeroWarsAPI getAPI()                       { return api; }
   }
