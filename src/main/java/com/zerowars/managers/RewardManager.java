@@ -15,6 +15,7 @@ import org.bukkit.plugin.RegisteredServiceProvider;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.logging.Level;
 
 /**
@@ -28,6 +29,10 @@ import java.util.logging.Level;
  * Vault (softdep): si no esta disponible, money se omite sin excepciones.
  * Items sobrantes (inventario lleno) se dropean en el suelo del jugador.
  * Multiplicadores de evento (EventManager) se aplican a money.
+ *
+ * FIX v1.4.3: giveItems ahora usa getMapList() en lugar de getConfigurationSection()
+ *             porque en rewards.yml los items se definen como lista YAML, no como seccion.
+ *             El metodo anterior siempre recibía null y nunca entregaba ningún item.
  */
 public class RewardManager {
 
@@ -67,7 +72,8 @@ public class RewardManager {
             ConfigurationSection sec = rewardSection(rewardId, "on-capture");
             if (sec == null) continue;
             giveMoney(player, sec.getDouble("money", 0), multiplier, zone);
-            giveItems(player, sec.getConfigurationSection("items"));
+            // FIX: usar getMapList ya que items es una lista YAML, no una seccion
+            giveItemsList(player, sec.getMapList("items"));
             executeCommands(player, sec.getStringList("commands"));
         }
     }
@@ -81,7 +87,8 @@ public class RewardManager {
             if (sec == null) continue;
             double money = sec.getDouble("money", 0);
             giveMoney(player, money, multiplier, zone);
-            giveItems(player, sec.getConfigurationSection("items"));
+            // FIX: usar getMapList ya que items es una lista YAML, no una seccion
+            giveItemsList(player, sec.getMapList("items"));
             totalMoney += money * multiplier;
         }
         if (totalMoney > 0 && vaultEnabled) {
@@ -102,7 +109,8 @@ public class RewardManager {
                 double mult = perLevel.getDouble("money-multiplier", 1.5);
                 giveMoney(player, baseMoney * (mult - 1.0), 1.0, zone);
             }
-            giveItems(player, perLevel.getConfigurationSection("extra-items-per-level." + newLevel));
+            // FIX: extra-items-per-level.<nivel> tambien es una lista YAML
+            giveItemsList(player, perLevel.getMapList("extra-items-per-level." + newLevel));
         }
         MessageUtil.sendTitle(player,
                 "<gradient:#ffaa00:#ff6600>ZONA MEJORADA",
@@ -143,18 +151,33 @@ public class RewardManager {
                     + " [" + zone.getId() + "]");
     }
 
-    private void giveItems(Player player, ConfigurationSection itemsSec) {
-        if (itemsSec == null) return;
-        for (String key : itemsSec.getKeys(false)) {
-            ConfigurationSection is = itemsSec.getConfigurationSection(key);
-            if (is == null) continue;
+    /**
+     * Entrega items a un jugador a partir de una lista de mapas YAML.
+     * Formato en rewards.yml:
+     *   items:
+     *     - material: DIAMOND
+     *       amount: 3
+     *       name: "<aqua>Diamante"
+     *       lore:
+     *         - "<gray>Linea de lore"
+     *
+     * FIX: reemplaza el anterior giveItems(Player, ConfigurationSection) que usaba
+     *      getConfigurationSection("items") — siempre null para listas YAML.
+     */
+    private void giveItemsList(Player player, List<Map<?, ?>> items) {
+        if (items == null || items.isEmpty()) return;
+        for (Map<?, ?> rawMap : items) {
             try {
-                Material mat = Material.valueOf(
-                        is.getString("material", "PAPER").toUpperCase());
-                int amount = is.getInt("amount", 1);
+                String matStr = String.valueOf(
+                        rawMap.getOrDefault("material", "PAPER")).toUpperCase();
+                int amount = ((Number) rawMap.getOrDefault("amount", 1)).intValue();
+                Material mat = Material.valueOf(matStr);
                 ItemStack item = new ItemStack(mat, amount);
-                String name = is.getString("name");
-                List<String> lore = is.getStringList("lore");
+
+                String name = (String) rawMap.get("name");
+                @SuppressWarnings("unchecked")
+                List<String> lore = (List<String>) rawMap.getOrDefault("lore", List.of());
+
                 if (name != null || !lore.isEmpty()) {
                     ItemMeta meta = item.getItemMeta();
                     if (meta != null) {
@@ -167,11 +190,13 @@ public class RewardManager {
                         item.setItemMeta(meta);
                     }
                 }
+
                 var leftover = player.getInventory().addItem(item);
                 leftover.values().forEach(
                         drop -> player.getWorld().dropItemNaturally(player.getLocation(), drop));
             } catch (Exception e) {
-                plugin.getLogger().log(Level.WARNING, "Error entregando item: " + e.getMessage());
+                plugin.getLogger().log(Level.WARNING,
+                        "Error entregando item de recompensa: " + e.getMessage());
             }
         }
     }
