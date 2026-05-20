@@ -9,20 +9,12 @@ import org.bukkit.entity.Player;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 
-/**
- * Gestor de jugadores online y ranking.
- * Cache en memoria de todos los PlayerData de jugadores conectados.
- * Los datos se cargan al entrar y se guardan al salir de forma asíncrona.
- */
 public class RankingManager {
 
     private final ZeroWars plugin;
     private final PlayerDAO playerDAO;
 
-    // Cache de jugadores online
     private final Map<UUID, PlayerData> playerCache = new ConcurrentHashMap<>();
-
-    // Cache de ranking (actualizado periódicamente)
     private final Map<String, List<PlayerData>> rankingCache = new HashMap<>();
 
     public RankingManager(ZeroWars plugin) {
@@ -30,11 +22,6 @@ public class RankingManager {
         this.playerDAO = new PlayerDAO(plugin);
     }
 
-    // ── Carga inicial ─────────────────────────────────────────────────────────
-
-    /**
-     * Carga rankings iniciales. Llama a este método una vez al iniciar.
-     */
     public void loadRankings() {
         Bukkit.getScheduler().runTaskAsynchronously(plugin, () -> {
             refreshRanking("kills");
@@ -44,29 +31,20 @@ public class RankingManager {
         });
     }
 
-    // ── Gestión de jugadores ──────────────────────────────────────────────────
-
-    /**
-     * Carga los datos de un jugador al entrar al servidor.
-     * Si no existe, crea un registro nuevo.
-     */
     public void loadPlayer(Player player) {
         UUID uuid = player.getUniqueId();
+        String name = player.getName();
         Bukkit.getScheduler().runTaskAsynchronously(plugin, () -> {
             PlayerData data = playerDAO.load(uuid);
             if (data == null) {
-                playerDAO.createNew(uuid, player.getName());
-                data = new PlayerData(uuid, player.getName());
+                playerDAO.createNew(uuid, name);
+                data = new PlayerData(uuid, name);
             }
-            data.setName(player.getName()); // actualizar nombre por si cambió
-            PlayerData finalData = data;
-            playerCache.put(uuid, finalData);
+            data.setName(name);
+            playerCache.put(uuid, data);
         });
     }
 
-    /**
-     * Guarda y elimina del cache al desconectarse.
-     */
     public void unloadPlayer(UUID uuid) {
         PlayerData data = playerCache.remove(uuid);
         if (data != null) {
@@ -74,16 +52,11 @@ public class RankingManager {
         }
     }
 
-    /**
-     * Guarda todos los jugadores online de forma asíncrona.
-     */
     public void saveAll() {
         for (PlayerData data : playerCache.values()) {
             Bukkit.getScheduler().runTaskAsynchronously(plugin, () -> playerDAO.save(data));
         }
     }
-
-    // ── Cache ─────────────────────────────────────────────────────────────────
 
     public PlayerData getCachedPlayerData(UUID uuid) {
         return playerCache.get(uuid);
@@ -93,12 +66,6 @@ public class RankingManager {
         return playerCache.containsKey(uuid);
     }
 
-    // ── Ranking ───────────────────────────────────────────────────────────────
-
-    /**
-     * Actualiza el ranking para una categoría desde la BD.
-     * Ejecutar siempre de forma asíncrona.
-     */
     public void refreshRanking(String column) {
         int size = plugin.getConfigManager().getTopSize();
         List<PlayerData> top = playerDAO.getTop(column, size);
@@ -107,9 +74,6 @@ public class RankingManager {
         }
     }
 
-    /**
-     * Obtiene el ranking cacheado para una categoría.
-     */
     public List<PlayerData> getRanking(String category) {
         String column = switch (category.toLowerCase()) {
             case "kills"         -> "kills";
@@ -122,12 +86,18 @@ public class RankingManager {
         }
     }
 
-    // ── Estadísticas ──────────────────────────────────────────────────────────
-
+    /**
+     * Registra un kill/death. killerUUID puede ser null (muerte por entorno).
+     * FIX: ConcurrentHashMap no acepta claves null — verificar antes de llamar get().
+     */
     public void registerKill(UUID killerUUID, UUID victimUUID) {
-        PlayerData killer = playerCache.get(killerUUID);
-        PlayerData victim = playerCache.get(victimUUID);
-        if (killer != null) killer.addKill();
-        if (victim != null) victim.addDeath();
+        if (killerUUID != null) {
+            PlayerData killer = playerCache.get(killerUUID);
+            if (killer != null) killer.addKill();
+        }
+        if (victimUUID != null) {
+            PlayerData victim = playerCache.get(victimUUID);
+            if (victim != null) victim.addDeath();
+        }
     }
 }
