@@ -3,6 +3,7 @@ package com.zerowars.listeners;
 import com.zerowars.ZeroWars;
 import com.zerowars.models.Zone;
 import com.zerowars.utils.MessageUtil;
+import org.bukkit.Bukkit;
 import org.bukkit.Sound;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
@@ -16,12 +17,14 @@ import org.bukkit.event.player.PlayerRespawnEvent;
 
 import java.util.Objects;
 import java.util.Optional;
+import java.util.UUID;
 
 /**
  * Listener de eventos de jugador:
  * - Join/Quit: carga y guarda datos del jugador
  * - Move: detecta entrada/salida de zonas
  * - Death: registra kills/deaths, aplica lógica de heat
+ * - Anti-logout: desconectarse dentro de una zona cuenta como derrota
  */
 public class PlayerListener implements Listener {
 
@@ -41,18 +44,46 @@ public class PlayerListener implements Listener {
     @EventHandler(priority = EventPriority.MONITOR)
     public void onQuit(PlayerQuitEvent event) {
         Player player = event.getPlayer();
+        UUID uuid = player.getUniqueId();
 
-        // Si estaba capturando, cancelar
-        if (plugin.getCaptureManager().isPlayerCapturing(player.getUniqueId())) {
-            String zoneId = plugin.getZoneManager().getPlayerZoneId(player.getUniqueId());
+        // ── Anti-logout: desconectarse dentro de una zona cuenta como derrota ──
+        // Se ejecuta ANTES de limpiar el caché para que registerKill pueda
+        // encontrar los datos del jugador y guardarlos con la muerte incluida.
+        String zoneId = plugin.getZoneManager().getPlayerZoneId(uuid);
+        if (zoneId != null) {
+            // Registrar muerte por desconexión en el ranking
+            plugin.getRankingManager().registerKill(null, uuid);
+
+            // Aplicar penalización de heat (igual que una muerte normal sin killer)
+            plugin.getHeatManager().onPlayerDeath(player, null);
+
+            // Notificar a los jugadores que están dentro de esa zona
+            String zoneName = plugin.getZoneManager().getZone(zoneId)
+                    .map(Zone::getDisplayName).orElse(zoneId);
+            String msg = plugin.getConfigManager().getMessage(
+                    "zone.logout-in-zone",
+                    "%player%", player.getName(),
+                    "%zone%", zoneName);
+            plugin.getZoneManager().getPlayersInZone(zoneId).forEach(inZoneUuid -> {
+                if (inZoneUuid.equals(uuid)) return;
+                Player other = Bukkit.getPlayer(inZoneUuid);
+                if (other != null) other.sendMessage(MessageUtil.parse(msg));
+            });
+
+            plugin.getLogger().info("[AntiLogout] " + player.getName()
+                    + " se desconectó en zona " + zoneId + " — muerte registrada.");
+        }
+
+        // Cancelar captura activa si la había
+        if (plugin.getCaptureManager().isPlayerCapturing(uuid)) {
             if (zoneId != null) {
                 plugin.getCaptureManager().cancelCapture(zoneId, "capture.cancelled");
             }
         }
 
-        plugin.getZoneManager().setPlayerZone(player.getUniqueId(), null);
-        plugin.getCooldownManager().cleanup(player.getUniqueId());
-        plugin.getRankingManager().unloadPlayer(player.getUniqueId());
+        plugin.getZoneManager().setPlayerZone(uuid, null);
+        plugin.getCooldownManager().cleanup(uuid);
+        plugin.getRankingManager().unloadPlayer(uuid);
     }
 
     // ── Movimiento ───────────────────────────────────────────────────────────
