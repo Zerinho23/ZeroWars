@@ -198,6 +198,12 @@ public class ClanManager {
     public boolean acceptInvite(Player player) {
         String clanId = pendingInvites.remove(player.getUniqueId());
         if (clanId == null || !clanNames.containsKey(clanId)) return false;
+        // FIX: verificar que el jugador no este ya en un clan
+        if (getClanOfPlayer(player.getUniqueId()) != null) {
+            player.sendMessage(com.zerowars.utils.MessageUtil.parse(
+                    "<red>✗ Ya perteneces a un clan. Sal primero con /clan leave."));
+            return false;
+        }
 
         clanMembers.computeIfAbsent(clanId, k -> new HashSet<>()).add(player.getUniqueId());
         PlayerData data = plugin.getRankingManager().getCachedPlayerData(player.getUniqueId());
