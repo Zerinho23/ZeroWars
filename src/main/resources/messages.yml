@@ -1,107 +1,119 @@
-# ╔══════════════════════════════════════════╗
-# ║        ZeroWars - messages.yml           ║
-# ║   Todos los mensajes con MiniMessage    ║
-# ╚══════════════════════════════════════════╝
-# Soporta colores HEX, gradientes y PlaceholderAPI
-# Referencia: https://docs.advntr.dev/minimessage/format.html
+# ╔══════════════════════════════════════════════════════════╗
+# ║              ZeroWars — messages.yml                     ║
+# ║  Soporta MiniMessage, colores hex (#RRGGBB / &#RRGGBB)  ║
+# ║  y códigos legacy Bukkit (&a, &l, &6, etc.)             ║
+# ╚══════════════════════════════════════════════════════════╝
+#
+# Documentación MiniMessage: https://docs.advntr.dev/minimessage
+# Placeholders disponibles se indican en cada mensaje con %placeholder%
 
-# ── Generales ──────────────────────────────
+# ── Generales ──────────────────────────────────────────────
 general:
-  no-permission: "<red>✗ No tienes permiso para hacer esto."
-  player-only: "<red>✗ Este comando solo lo puede usar un jugador."
-  reload-success: "<green>✔ Configuración recargada correctamente."
-  invalid-args: "<red>✗ Uso incorrecto. Usa <yellow>%usage%</yellow>."
-  player-not-found: "<red>✗ Jugador <yellow>%player%</yellow> no encontrado."
-  console-cannot-use: "<red>✗ La consola no puede ejecutar este comando."
-  unknown-command: "<red>✗ Subcomando desconocido. Usa <yellow>/zw help</yellow>."
+  no-permission: "<dark_gray>[<red>✗<dark_gray>] <red>No tienes permiso para hacer esto."
+  player-only: "<dark_gray>[<red>✗<dark_gray>] <red>Este comando solo lo puede usar un jugador."
+  reload-success: "<dark_gray>[<green>✔<dark_gray>] <green>Configuración recargada correctamente."
+  invalid-args: "<dark_gray>[<red>✗<dark_gray>] <red>Uso incorrecto. Usa <yellow>%usage%<red>."
+  player-not-found: "<dark_gray>[<red>✗<dark_gray>] <red>Jugador <yellow>%player%<red> no encontrado."
+  console-cannot-use: "<dark_gray>[<red>✗<dark_gray>] <red>La consola no puede ejecutar este comando."
+  unknown-command: "<dark_gray>[<red>✗<dark_gray>] <red>Subcomando desconocido. Usa <yellow>/zw help<red>."
 
-# ── Zonas ──────────────────────────────────
+# ── Zonas ──────────────────────────────────────────────────
 zone:
-  enter: "<gradient:#00aaff:#0044ff>⚔ Entraste a <bold>%zone%</bold></gradient> <gray>| Dueño: <white>%owner%"
-  leave: "<gray>← Saliste de <white>%zone%</white>."
-  logout-in-zone: "<red>☠ <white>%player%</white> <red>huyó de <white>%zone%</white> <gray>(se desconectó — derrota contabilizada)"
-  not-in-zone: "<gray>✗ No estás dentro de ninguna zona."
+  enter: "<dark_gray>[<gradient:#00ccff:#aa00ff>⚔</gradient><dark_gray>] <white>Entraste a <gradient:#00ccff:#0055ff><bold>%zone%</bold></gradient> <dark_gray>• <gray>Dueño: <yellow>%owner%"
+  leave: "<dark_gray>[<dark_gray>←] <gray>Saliste de <white>%zone%<gray>."
+  logout-in-zone: "<dark_red>[<bold>!</bold>] <red><bold>%player%</bold> <red>escapó de <white>%zone% <dark_gray>(<red>desconexión — derrota registrada<dark_gray>)"
+  not-in-zone: "<dark_gray>[<red>✗<dark_gray>] <gray>No estás dentro de ninguna zona."
   info: |
-    <gradient:#ff4444:#ff8800>━━━━━━ %zone% ━━━━━━</gradient>
-    <gray>Tipo: <white>%type%
-    <gray>Dueño: <white>%owner%
-    <gray>Nivel: <white>%level%
-    <gray>Captura: <white>%capture%%
-    <gray>Estado: <white>%status%
-  list-header: "<gradient:#ff4444:#ff8800>━━━━ Zonas ZeroWars ━━━━</gradient>"
-  list-entry: "<gray>▸ <white>%zone% <dark_gray>| <gray>Dueño: <white>%owner% <dark_gray>| <gray>Tipo: <yellow>%type%"
-  list-empty: "<gray>No hay zonas configuradas."
-  created: "<green>✔ Zona <white>%zone%</white> creada correctamente."
-  deleted: "<red>✗ Zona <white>%zone%</white> eliminada."
-  not-found: "<red>✗ Zona <yellow>%zone%</yellow> no encontrada."
-  already-exists: "<red>✗ Ya existe una zona con el nombre <yellow>%zone%</yellow>."
+    <dark_gray>╔══════════════════════════╗
+    <dark_gray>║ <gradient:#ff4444:#ff8800><bold>%zone%</bold></gradient>
+    <dark_gray>╠══════════════════════════╣
+    <dark_gray>║ <gray>Tipo:   <white>%type%
+    <dark_gray>║ <gray>Dueño:  <white>%owner%
+    <dark_gray>║ <gray>Nivel:  <gold>%level%
+    <dark_gray>║ <gray>Progreso: <yellow>%capture%%
+    <dark_gray>║ <gray>Estado: <white>%status%
+    <dark_gray>╚══════════════════════════╝
+  list-header: "<dark_gray>╔═<gradient:#ff4444:#ff8800><bold> ZONAS ZEROWARS </bold></gradient><dark_gray>=╗"
+  list-entry: "  <dark_gray>▸ <white>%zone% <dark_gray>│ <gray>Dueño: <yellow>%owner% <dark_gray>│ <gray>Tipo: <aqua>%type%"
+  list-empty: "<dark_gray>  <gray>No hay zonas configuradas."
+  created: "<dark_gray>[<green>✔<dark_gray>] <green>Zona <white>%zone%</white> creada correctamente."
+  deleted: "<dark_gray>[<red>✗<dark_gray>] <red>Zona <white>%zone%</white> eliminada."
+  not-found: "<dark_gray>[<red>✗<dark_gray>] <red>Zona <yellow>%zone%<red> no encontrada."
+  already-exists: "<dark_gray>[<red>✗<dark_gray>] <red>Ya existe una zona llamada <yellow>%zone%<red>."
 
-# ── Captura ─────────────────────────────────
+# ── Captura ─────────────────────────────────────────────────
+# Placeholders del actionbar-capturing: %zone% %bar% %progress% %time%
+# Placeholders del actionbar-contested: %zone%
+# Placeholders del bossbar: %zone% %progress%
 capture:
-  started: "<gradient:#ffaa00:#ff4444>⚔ ¡Iniciando captura de <bold>%zone%</bold>!</gradient>"
-  progress: "<yellow>⚔ Capturando <white>%zone% <yellow>— <white>%progress%%"
-  contested: "<red>⚠ ¡Captura CONTESTADA en <bold>%zone%</bold>!"
-  completed: "<gradient:#00ff00:#00aa00>✔ <bold>%player%</bold> ha capturado <bold>%zone%</bold>!</gradient>"
-  completed-broadcast: "<gradient:#ffaa00:#ff4444>⚔ <bold>%player%</bold> dominó <bold>%zone%</bold>! ¡Atácalo!</gradient>"
-  lost: "<red>✗ ¡Perdiste el control de <bold>%zone%</bold>!"
-  cancelled: "<gray>✗ Captura de %zone% cancelada."
-  already-owner: "<yellow>⚠ Ya eres el dueño de esta zona."
-  bossbar-capturing: "⚔ Capturando %zone% — %progress%%"
-  bossbar-defending: "🛡 Defendiendo %zone% — %progress%%"
-  bossbar-contested: "⚠ EN DISPUTA — %zone%"
-  actionbar-capturing: "<yellow>⚔ Capturando <white>%zone% <yellow>| <white>%time%s restantes"
-  actionbar-contested: "<red>⚠ ¡ZONA EN DISPUTA! Elimina al enemigo."
+  started: "<dark_gray>━━━━━━━━━━━━━━━━━━━━━━━━━━\n<gradient:#ffaa00:#ff4400>  ⚔  INICIANDO CAPTURA  ⚔  </gradient>\n<dark_gray>━━━━━━━━━━━━━━━━━━━━━━━━━━\n<gray>  Zona: <white><bold>%zone%</bold>"
+  contested: "<dark_gray>━━━━━━━━━━━━━━━━━━━━━━━━━━\n<gradient:#ff0000:#ff6600>  ⚠  ZONA EN DISPUTA  ⚠  </gradient>\n<dark_gray>━━━━━━━━━━━━━━━━━━━━━━━━━━\n<gray>  Zona: <white><bold>%zone%</bold>"
+  completed: "<dark_gray>━━━━━━━━━━━━━━━━━━━━━━━━━━\n<gradient:#00ff88:#00cc55>  ✔  ZONA CAPTURADA  ✔  </gradient>\n<dark_gray>━━━━━━━━━━━━━━━━━━━━━━━━━━\n<gray>  <white><bold>%player%</bold> <gray>dominó <gradient:#00ccff:#0055ff><bold>%zone%</bold></gradient>"
+  completed-broadcast: "<dark_gray>[<gradient:#ffaa00:#ff4400>⚔ ZeroWars</gradient><dark_gray>] <gradient:#ffaa00:#ff4400><bold>%player%</bold></gradient> <yellow>dominó <white><bold>%zone%</bold><yellow>! <gray>¡Atácalo para reclamarla!"
+  lost: "<dark_gray>[<red>⚠<dark_gray>] <red>¡Perdiste el control de <white><bold>%zone%</bold><red>!"
+  cancelled: "<dark_gray>[<gray>✗<dark_gray>] <gray>Captura de <white>%zone%<gray> cancelada."
+  already-owner: "<dark_gray>[<yellow>⚠<dark_gray>] <yellow>Ya eres el dueño de esta zona."
 
-# ── Recompensas ─────────────────────────────
+  # BossBar — mostrado sobre el HUD durante la captura
+  bossbar-capturing: "<gradient:#ff6600:#ffcc00>⚔ Capturando</gradient> <white><bold>%zone%</bold> <dark_gray>│ <yellow>%progress%%"
+  bossbar-defending: "<gradient:#00aa00:#00ff88>🛡 Defendiendo</gradient> <white><bold>%zone%</bold>"
+  bossbar-contested: "<gradient:#ff0000:#ff6600>⚠ EN DISPUTA ⚠</gradient> <dark_gray>│ <white><bold>%zone%</bold>"
+
+  # ActionBar — mostrado en la barra de acción (centro inferior)
+  # %bar% = barra de progreso visual  |  %progress% = número %  |  %time% = segundos restantes
+  actionbar-capturing: "<gradient:#ff6600:#ffcc00>⚔</gradient> <white><bold>%zone%</bold> <dark_gray>│ <gray>%bar% <dark_gray>│ <gold><bold>%progress%%</bold> <dark_gray>│ <white>%time%s"
+  actionbar-contested: "<gradient:#ff0000:#ff5500>⚠ DISPUTA ⚠</gradient> <dark_gray>│ <white><bold>%zone%</bold> <dark_gray>│ <red>¡Elimina al invasor!"
+
+# ── Recompensas ─────────────────────────────────────────────
 reward:
-  received: "<green>✔ Recompensa recibida: <white>%reward%"
-  money: "<green>+$%amount% <gray>por dominar <white>%zone%"
-  item: "<green>✔ Item obtenido: <white>%item%"
-  cooldown: "<yellow>⏳ Próxima recompensa en <white>%time%s"
+  received: "<dark_gray>[<green>✔<dark_gray>] <green>Recompensa recibida: <white>%reward%"
+  money: "<dark_gray>[<gold>$<dark_gray>] <green>+<gold>%amount% <gray>por dominar <white>%zone%"
+  item: "<dark_gray>[<aqua>✦<dark_gray>] <aqua>Item obtenido: <white>%item%"
+  cooldown: "<dark_gray>[<yellow>⏳<dark_gray>] <yellow>Próxima recompensa en <white>%time%s"
 
-# ── Consumibles ─────────────────────────────
+# ── Consumibles ─────────────────────────────────────────────
 consumable:
-  used: "<gradient:#aa00ff:#ff00aa>⚡ Usaste: <bold>%consumable%</bold></gradient>"
-  cooldown: "<red>⏳ Cooldown: <white>%time%s <red>restantes para <yellow>%consumable%"
-  expired: "<gray>El efecto de <white>%consumable%</white> ha terminado."
-  given: "<green>✔ Se dio <white>%consumable% x%amount%</white> a <yellow>%player%</yellow>."
-  actionbar-cooldown: "<yellow>⏳ %consumable% — <white>%time%s"
+  used: "<dark_gray>[<gradient:#aa00ff:#ff00aa>⚡</gradient><dark_gray>] <gradient:#aa00ff:#ff00aa>Usaste: <bold>%consumable%</bold></gradient>"
+  cooldown: "<dark_gray>[<red>⏳<dark_gray>] <red>Cooldown: <white>%time%s <red>restantes — <yellow>%consumable%"
+  expired: "<dark_gray>[<gray>✦<dark_gray>] <gray>El efecto de <white>%consumable%</white> ha terminado."
+  given: "<dark_gray>[<green>✔<dark_gray>] <green>Se dio <white>%consumable% x%amount%</white> a <yellow>%player%</yellow>."
+  actionbar-cooldown: "<yellow>⏳ %consumable% <dark_gray>— <white>%time%s"
 
-# ── Eventos ─────────────────────────────────
+# ── Eventos ─────────────────────────────────────────────────
 event:
-  start-broadcast: "<gradient:#ffaa00:#ff0000>⚡ ¡EVENTO INICIADO: <bold>%event%</bold>!</gradient> <gray>Duración: <white>%duration%min"
-  end-broadcast: "<red>⏹ Evento <bold>%event%</bold> finalizado."
-  info: "<yellow>▸ <white>%event% <dark_gray>| <gray>Tiempo: <white>%time%min restantes"
-  list-empty: "<gray>No hay eventos activos en este momento."
-  no-active: "<gray>No hay eventos activos."
-  already-running: "<red>✗ El evento <yellow>%event%</yellow> ya está activo."
-  not-found: "<red>✗ Evento <yellow>%event%</yellow> no encontrado."
-  started-manual: "<green>✔ Evento <white>%event%</white> iniciado manualmente."
-  stopped: "<red>✔ Evento <white>%event%</white> detenido."
+  start-broadcast: "<dark_gray>━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n<gradient:#ffaa00:#ff0000>  ⚡  EVENTO INICIADO  ⚡  </gradient>\n<dark_gray>━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n<gray>  <white><bold>%event%</bold> <dark_gray>│ <gray>Duración: <yellow>%duration% min"
+  end-broadcast: "<dark_gray>[<red>⏹<dark_gray>] <red>Evento <white><bold>%event%</bold><red> ha finalizado."
+  info: "<dark_gray>▸ <white><bold>%event%</bold> <dark_gray>│ <gray>Tiempo: <yellow>%time% min restantes"
+  list-empty: "<dark_gray>  <gray>No hay eventos activos en este momento."
+  no-active: "<dark_gray>  <gray>No hay eventos activos."
+  already-running: "<dark_gray>[<red>✗<dark_gray>] <red>El evento <yellow>%event%<red> ya está activo."
+  not-found: "<dark_gray>[<red>✗<dark_gray>] <red>Evento <yellow>%event%<red> no encontrado."
+  started-manual: "<dark_gray>[<green>✔<dark_gray>] <green>Evento <white>%event%</white> iniciado manualmente."
+  stopped: "<dark_gray>[<red>⏹<dark_gray>] <red>Evento <white>%event%</white> detenido."
 
-# ── Heat/Wanted ──────────────────────────────
+# ── Heat / Wanted ────────────────────────────────────────────
 heat:
-  level-up: "<gradient:#ff4444:#ff0000>⚠ <bold>%player%</bold> alcanzó nivel de amenaza: <bold>%level_name%</bold>!</gradient>"
-  max-level-broadcast: "<gradient:#ff0000:#800000>☠ <bold>%player%</bold> es el más BUSCADO del servidor! ¡Hay $%bounty% por su cabeza!</gradient>"
-  kill-reward: "<green>☠ Eliminaste a <red>%player%</red> <gray>(Buscado) <green>+$%reward%"
-  tag: "<red>⚠ %player% domina %zone%"
+  level-up: "<dark_gray>━━━━━━━━━━━━━━━━━━━━━━━━━━\n<gradient:#ff4444:#ff0000>  ⚠  AMENAZA DETECTADA  ⚠  </gradient>\n<dark_gray>━━━━━━━━━━━━━━━━━━━━━━━━━━\n<gray>  <white><bold>%player%</bold> <gray>→ Nivel: <red><bold>%level_name%</bold>"
+  max-level-broadcast: "<dark_gray>━━━━━━━━━━━━━━━━━━━━━━━━━━\n<gradient:#ff0000:#800000>  ☠  MÁS BUSCADO  ☠  </gradient>\n<dark_gray>━━━━━━━━━━━━━━━━━━━━━━━━━━\n<gray>  <white><bold>%player%</bold> <gray>│ Recompensa: <gold><bold>$%bounty%</bold>"
+  kill-reward: "<dark_gray>[<red>☠<dark_gray>] <green>Eliminaste al buscado <red><bold>%player%</bold> <dark_gray>│ <green><bold>+$%reward%</bold>"
+  tag: "<dark_gray>[<red>⚠<dark_gray>] <red>%player% <gray>domina <white>%zone%"
 
-# ── Ranking ──────────────────────────────────
+# ── Ranking ──────────────────────────────────────────────────
 top:
-  header: "<gradient:#ffaa00:#ff4444>━━━━ Top %category% ━━━━</gradient>"
-  entry: "<gray>%pos%. <white>%player% <dark_gray>— <yellow>%value%"
-  no-data: "<gray>No hay datos de ranking aún."
-  categories: "<yellow>Categorías: <white>players, clans, zones"
+  header: "<dark_gray>╔═<gradient:#ffaa00:#ff4444><bold> TOP %category% </bold></gradient><dark_gray>=╗"
+  entry: "  <dark_gray>%pos%. <white><bold>%player%</bold> <dark_gray>─ <yellow>%value%"
+  no-data: "<dark_gray>  <gray>No hay datos de ranking aún."
+  categories: "<dark_gray>[<yellow>?<dark_gray>] <yellow>Categorías: <white>players, clans, zones"
 
-# ── Clanes ───────────────────────────────────
+# ── Clanes ───────────────────────────────────────────────────
 clan:
-  created: "<green>✔ Clan <white>%clan%</white> creado."
-  disbanded: "<red>✗ Clan <white>%clan%</white> disuelto."
-  joined: "<green>✔ Te uniste al clan <white>%clan%</white>."
-  left: "<gray>Saliste del clan <white>%clan%</white>."
-  already-in-clan: "<red>✗ Ya perteneces a un clan."
-  not-in-clan: "<red>✗ No perteneces a ningún clan."
-  full: "<red>✗ El clan <yellow>%clan%</yellow> está lleno."
-  not-found: "<red>✗ Clan <yellow>%clan%</yellow> no encontrado."
-  invited: "<green>✔ Invitaste a <white>%player%</white> al clan."
-  invite-received: "<yellow>⚔ <white>%player%</white> te invitó al clan <white>%clan%</white>. Usa <yellow>/clan accept</yellow>."
+  created: "<dark_gray>[<green>✔<dark_gray>] <green>Clan <white><bold>%clan%</bold></white> creado."
+  disbanded: "<dark_gray>[<red>✗<dark_gray>] <red>Clan <white><bold>%clan%</bold></white> disuelto."
+  joined: "<dark_gray>[<green>✔<dark_gray>] <green>Te uniste al clan <white><bold>%clan%</bold></white>."
+  left: "<dark_gray>[<gray>←<dark_gray>] <gray>Saliste del clan <white><bold>%clan%</bold></white>."
+  already-in-clan: "<dark_gray>[<red>✗<dark_gray>] <red>Ya perteneces a un clan."
+  not-in-clan: "<dark_gray>[<red>✗<dark_gray>] <red>No perteneces a ningún clan."
+  full: "<dark_gray>[<red>✗<dark_gray>] <red>El clan <yellow>%clan%<red> está lleno."
+  not-found: "<dark_gray>[<red>✗<dark_gray>] <red>Clan <yellow>%clan%<red> no encontrado."
+  invited: "<dark_gray>[<green>✔<dark_gray>] <green>Invitaste a <white>%player%</white> al clan."
+  invite-received: "<dark_gray>[<yellow>⚔<dark_gray>] <white><bold>%player%</bold> <yellow>te invitó al clan <white><bold>%clan%</bold><yellow>. Usa <aqua>/clan accept<yellow>."
