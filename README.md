@@ -300,6 +300,9 @@
 
   ## Changelog
 
+  ### v1.4.1
+  - **FIX**: Indentación YAML incorrecta en `plugin.yml` que causaba `Invalid plugin.yml` al cargar el plugin en Paper 1.20.6+
+
   ### v1.4.0
   - **NUEVO**: Hacha wand para crear zonas — marca pos1/pos2 en el mapa sin editar YAML
   - **NUEVO**: `ZoneCreateGui` — menú visual para configurar tipo, nombre y área antes de crear
