@@ -1,6 +1,7 @@
 package com.zerowars.managers;
 
 import com.zerowars.ZeroWars;
+import net.milkbowl.vault.economy.Economy;
 import com.zerowars.models.PlayerData;
 import com.zerowars.models.Zone;
 import com.zerowars.utils.MessageUtil;
@@ -97,6 +98,11 @@ public class HeatManager {
         if (killer != null) {
             double reward = calculateBounty(data)
                     * plugin.getConfigManager().getHeatKillRewardMultiplier();
+            // FIX: depositar el bounty via Vault si está disponible
+            if (reward > 0 && plugin.getRewardManager().isVaultEnabled()) {
+                Economy eco = plugin.getRewardManager().getEconomy();
+                if (eco != null) eco.depositPlayer(killer, reward);
+            }
             killer.sendMessage(MessageUtil.parse(
                     plugin.getConfigManager().getMessage("heat.kill-reward",
                             "%player%", player.getName(),
