@@ -168,15 +168,18 @@ public class RewardManager {
         if (items == null || items.isEmpty()) return;
         for (Map<?, ?> rawMap : items) {
             try {
-                String matStr = String.valueOf(
-                        rawMap.getOrDefault("material", "PAPER")).toUpperCase();
-                int amount = ((Number) rawMap.getOrDefault("amount", 1)).intValue();
+                Object matObj = rawMap.get("material");
+                String matStr = (matObj != null ? matObj.toString() : "PAPER").toUpperCase();
+                Object amtObj = rawMap.get("amount");
+                int amount = amtObj instanceof Number n ? n.intValue() : 1;
                 Material mat = Material.valueOf(matStr);
                 ItemStack item = new ItemStack(mat, amount);
 
                 String name = (String) rawMap.get("name");
                 @SuppressWarnings("unchecked")
-                List<String> lore = (List<String>) rawMap.getOrDefault("lore", List.of());
+                Object loreObj = rawMap.get("lore");
+                @SuppressWarnings("unchecked")
+                List<String> lore = (loreObj instanceof List<?>) ? (List<String>) loreObj : List.of();
 
                 if (name != null || !lore.isEmpty()) {
                     ItemMeta meta = item.getItemMeta();
