@@ -21,6 +21,9 @@ import java.util.concurrent.ConcurrentHashMap;
  * v1.2.0: completeCapture() invoca RewardManager.giveOnCaptureReward()
  *         y ZoneManager.tryLevelUp() al completar la captura.
  * v1.1.3: BossBar migrado a Adventure API (MiniMessage correcto).
+ * v1.4.5: Mensajes de BossBar y ActionBar completamente configurables
+ *         desde messages.yml. ActionBar incluye %bar% (barra visual),
+ *         %progress% (porcentaje) y %time% (segundos restantes).
  */
 public class CaptureManager {
 
@@ -116,7 +119,6 @@ public class CaptureManager {
         if (data != null) data.addCapture();
         plugin.getHeatManager().onZoneCaptured(attacker, zone);
 
-        // v1.2.0: recompensas de captura + verificar level-up
         plugin.getRewardManager().giveOnCaptureReward(attacker, zone);
         plugin.getZoneManager().tryLevelUp(zone, attacker);
 
@@ -138,7 +140,9 @@ public class CaptureManager {
         }
         ZoneCapture capture = new ZoneCapture(zoneId, player.getUniqueId(), player.getName(),
                 zone.getCaptureProgress(), zone.getCaptureTime());
-        Component title = MessageUtil.parse("Capturando " + zone.getDisplayName());
+        Component title = MessageUtil.parse(
+                plugin.getConfigManager().getMessage("capture.bossbar-capturing",
+                        "%zone%", zone.getDisplayName(), "%progress%", "0"));
         BossBar bossBar = BossBar.bossBar(title, 0f, BossBar.Color.RED, BossBar.Overlay.NOTCHED_10);
         capture.setBossBar(bossBar);
         capture.showBossBarTo(player);
@@ -170,28 +174,64 @@ public class CaptureManager {
 
     // -- UI ------------------------------------------------------------------
 
+    /**
+     * Actualiza el BossBar con el mensaje configurado en messages.yml.
+     * Claves: capture.bossbar-capturing / bossbar-defending / bossbar-contested
+     * Placeholders: %zone%, %progress%
+     */
     private void updateBossBar(Zone zone, ZoneCapture capture) {
         if (capture.getBossBar() == null) return;
-        Component title = switch (capture.getPhase()) {
-            case CAPTURING -> MessageUtil.parse("<gradient:#ff4400:#ffaa00>Capturando </gradient>"
-                    + zone.getDisplayName() + " <white>" + String.format("%.0f", capture.getProgress()) + "%");
-            case DEFENDING -> MessageUtil.parse("<green>Defendiendo " + zone.getDisplayName());
-            case CONTESTED -> MessageUtil.parse("<yellow>EN DISPUTA</yellow> — " + zone.getDisplayName());
-            default        -> MessageUtil.parse(zone.getDisplayName());
+        String msgKey = switch (capture.getPhase()) {
+            case CAPTURING -> "capture.bossbar-capturing";
+            case DEFENDING -> "capture.bossbar-defending";
+            case CONTESTED -> "capture.bossbar-contested";
+            default        -> "capture.bossbar-capturing";
         };
-        capture.updateBossBar(title);
+        String msg = plugin.getConfigManager().getMessage(msgKey,
+                "%zone%", zone.getDisplayName(),
+                "%progress%", String.format("%.0f", capture.getProgress()));
+        capture.updateBossBar(MessageUtil.parse(msg));
     }
 
+    /**
+     * Envía el ActionBar de captura configurado en messages.yml.
+     * Clave: capture.actionbar-capturing
+     * Placeholders: %zone%, %bar%, %progress%, %time%
+     */
     private void sendCaptureActionBar(Player player, Zone zone, ZoneCapture capture) {
         int remaining = (int) Math.ceil(zone.getCaptureTime() * (1.0 - capture.getProgress() / 100.0));
-        player.sendActionBar(MessageUtil.parse(plugin.getConfigManager().getMessage(
-                "capture.actionbar-capturing", "%zone%", zone.getDisplayName(),
-                "%time%", String.valueOf(remaining))));
+        String bar = buildProgressBar(capture.getProgress(), 10);
+        player.sendActionBar(MessageUtil.parse(
+                plugin.getConfigManager().getMessage("capture.actionbar-capturing",
+                        "%zone%", zone.getDisplayName(),
+                        "%bar%", bar,
+                        "%progress%", String.format("%.0f", capture.getProgress()),
+                        "%time%", String.valueOf(remaining))));
     }
 
+    /**
+     * Envía el ActionBar de disputa configurado en messages.yml.
+     * Clave: capture.actionbar-contested
+     * Placeholders: %zone%
+     */
     private void sendContestActionBar(Player player, Zone zone) {
         player.sendActionBar(MessageUtil.parse(
-                plugin.getConfigManager().getMessage("capture.actionbar-contested")));
+                plugin.getConfigManager().getMessage("capture.actionbar-contested",
+                        "%zone%", zone.getDisplayName())));
+    }
+
+    /**
+     * Genera una barra de progreso visual con bloques unicode.
+     * Ejemplo (50%): ██████░░░░  (filled=#ff6600, empty=#2a2a2a)
+     *
+     * @param progress valor 0–100
+     * @param length   número total de bloques
+     */
+    private String buildProgressBar(double progress, int length) {
+        int filled = (int) Math.round(progress / 100.0 * length);
+        filled = Math.max(0, Math.min(filled, length));
+        return "<#ff6600>" + "█".repeat(filled)
+             + "<#2a2a2a>" + "█".repeat(length - filled);
     }
 
     // -- Shutdown ------------------------------------------------------------
