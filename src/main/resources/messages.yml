@@ -19,6 +19,7 @@ general:
 zone:
   enter: "<gradient:#00aaff:#0044ff>⚔ Entraste a <bold>%zone%</bold></gradient> <gray>| Dueño: <white>%owner%"
   leave: "<gray>← Saliste de <white>%zone%</white>."
+  logout-in-zone: "<red>☠ <white>%player%</white> <red>huyó de <white>%zone%</white> <gray>(se desconectó — derrota contabilizada)"
   not-in-zone: "<gray>✗ No estás dentro de ninguna zona."
   info: |
     <gradient:#ff4444:#ff8800>━━━━━━ %zone% ━━━━━━</gradient>
