@@ -1,49 +1,49 @@
 plugins {
-        id 'java'
-        id 'com.gradleup.shadow' version '8.3.6'
+    id 'java'
+    id 'com.gradleup.shadow' version '8.3.6'
+}
+
+group = 'com.zerowars'
+version = '1.4.1'
+description = 'ZeroWars - Competitive PvP Zone Control Plugin'
+
+repositories {
+    mavenCentral()
+    maven { url = 'https://repo.papermc.io/repository/maven-public/' }
+    maven { url = 'https://repo.extendedclip.com/content/repositories/placeholderapi/' }
+    maven { url = 'https://jitpack.io' }
+}
+
+dependencies {
+    compileOnly 'io.papermc.paper:paper-api:1.20.1-R0.1-SNAPSHOT'
+    compileOnly 'me.clip:placeholderapi:2.11.5'
+    compileOnly 'com.github.MilkBowl:VaultAPI:1.7'
+    implementation 'org.xerial:sqlite-jdbc:3.45.1.0'
+    implementation 'com.zaxxer:HikariCP:5.1.0'
+    implementation 'com.mysql:mysql-connector-j:8.3.0'
+}
+
+processResources {
+    def props = [version: version]
+    inputs.properties(props)
+    filteringCharset 'UTF-8'
+    filesMatching('plugin.yml') { expand(props) }
+}
+
+tasks.withType(JavaCompile).configureEach {
+    options.encoding = 'UTF-8'
+    options.release = 17
+}
+
+shadowJar {
+    archiveClassifier.set('')
+    relocate 'com.zaxxer.hikari', 'com.zerowars.libs.hikari'
+    relocate 'com.mysql',         'com.zerowars.libs.mysql'
+    mergeServiceFiles()
+    minimize {
+        exclude(dependency('org.xerial:sqlite-jdbc:.*'))
+        exclude(dependency('com.mysql:mysql-connector-j:.*'))
     }
+}
 
-    group = 'com.zerowars'
-    version = '1.4.0'
-    description = 'ZeroWars - Competitive PvP Zone Control Plugin'
-
-    repositories {
-        mavenCentral()
-        maven { url = 'https://repo.papermc.io/repository/maven-public/' }
-        maven { url = 'https://repo.extendedclip.com/content/repositories/placeholderapi/' }
-        maven { url = 'https://jitpack.io' }
-    }
-
-    dependencies {
-        compileOnly 'io.papermc.paper:paper-api:1.20.1-R0.1-SNAPSHOT'
-        compileOnly 'me.clip:placeholderapi:2.11.5'
-        compileOnly 'com.github.MilkBowl:VaultAPI:1.7'
-        implementation 'org.xerial:sqlite-jdbc:3.45.1.0'
-        implementation 'com.zaxxer:HikariCP:5.1.0'
-        implementation 'com.mysql:mysql-connector-j:8.3.0'
-    }
-
-    processResources {
-        def props = [version: version]
-        inputs.properties(props)
-        filteringCharset 'UTF-8'
-        filesMatching('plugin.yml') { expand(props) }
-    }
-
-    tasks.withType(JavaCompile).configureEach {
-        options.encoding = 'UTF-8'
-        options.release = 17
-    }
-
-    shadowJar {
-        archiveClassifier.set('')
-        relocate 'com.zaxxer.hikari', 'com.zerowars.libs.hikari'
-        relocate 'com.mysql',         'com.zerowars.libs.mysql'
-        mergeServiceFiles()
-        minimize {
-            exclude(dependency('org.xerial:sqlite-jdbc:.*'))
-            exclude(dependency('com.mysql:mysql-connector-j:.*'))
-        }
-    }
-
-    build.dependsOn shadowJar
+build.dependsOn shadowJar
