@@ -2,7 +2,7 @@
 
   <div align="center">
 
-  ![ZeroWars](https://img.shields.io/badge/ZeroWars-v1.4.1-red?style=for-the-badge&logo=minecraft)
+  ![ZeroWars](https://img.shields.io/badge/ZeroWars-v1.4.2-red?style=for-the-badge&logo=minecraft)
   ![Java](https://img.shields.io/badge/Java-17%2B-orange?style=for-the-badge&logo=openjdk)
   ![Paper](https://img.shields.io/badge/Paper-1.20.4+-blue?style=for-the-badge)
   ![License](https://img.shields.io/badge/License-MIT-green?style=for-the-badge)
@@ -12,7 +12,7 @@
 
   *Domina zonas, captura minas, destruye enemigos. Sin pausas. Sin tregua.*
 
-  [**Descargar v1.4.1**](https://github.com/Zerinho23/ZeroWars/releases/latest) · [Issues](https://github.com/Zerinho23/ZeroWars/issues) · [Releases](https://github.com/Zerinho23/ZeroWars/releases)
+  [**Descargar v1.4.2**](https://github.com/Zerinho23/ZeroWars/releases/latest) · [Issues](https://github.com/Zerinho23/ZeroWars/issues) · [Releases](https://github.com/Zerinho23/ZeroWars/releases)
 
   </div>
 
@@ -52,7 +52,7 @@
   - (Opcional) PlaceholderAPI para variables en ScoreBoard/TAB
 
   ### Pasos
-  1. Descarga **[ZeroWars-1.4.1.jar](https://github.com/Zerinho23/ZeroWars/releases/latest)**
+  1. Descarga **[ZeroWars-1.4.2.jar](https://github.com/Zerinho23/ZeroWars/releases/latest)**
   2. Colócalo en la carpeta `plugins/` del servidor
   3. Reinicia el servidor
   4. Configura `plugins/ZeroWars/config.yml` (base de datos, general)
@@ -299,6 +299,11 @@
   ---
 
   ## Changelog
+
+  ### v1.4.2
+- **NUEVO**: Banner de inicio en consola con colores ANSI (nombre, versión, autor, colaborador)
+- **MEJORADO**: Mensajes de activación y desactivación con colores en consola
+- **MEJORADO**: Indentación del código principal corregida
 
   ### v1.4.1
   - **FIX**: Indentación YAML incorrecta en `plugin.yml` que causaba `Invalid plugin.yml` al cargar el plugin en Paper 1.20.6+
